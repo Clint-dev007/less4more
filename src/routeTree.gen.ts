@@ -13,6 +13,13 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
+import { Route as AuthenticatedAppWithdrawRouteImport } from './routes/_authenticated/app.withdraw'
+import { Route as AuthenticatedAppReferralsRouteImport } from './routes/_authenticated/app.referrals'
+import { Route as AuthenticatedAppPortfolioRouteImport } from './routes/_authenticated/app.portfolio'
+import { Route as AuthenticatedAppNotificationsRouteImport } from './routes/_authenticated/app.notifications'
+import { Route as AuthenticatedAppLeaderboardRouteImport } from './routes/_authenticated/app.leaderboard'
+import { Route as AuthenticatedAppInvestRouteImport } from './routes/_authenticated/app.invest'
+import { Route as AuthenticatedAppDepositRouteImport } from './routes/_authenticated/app.deposit'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -34,16 +41,70 @@ const AuthenticatedAppIndexRoute = AuthenticatedAppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAppRoute,
 } as any)
+const AuthenticatedAppWithdrawRoute =
+  AuthenticatedAppWithdrawRouteImport.update({
+    id: '/withdraw',
+    path: '/withdraw',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppReferralsRoute =
+  AuthenticatedAppReferralsRouteImport.update({
+    id: '/referrals',
+    path: '/referrals',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppPortfolioRoute =
+  AuthenticatedAppPortfolioRouteImport.update({
+    id: '/portfolio',
+    path: '/portfolio',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppNotificationsRoute =
+  AuthenticatedAppNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppLeaderboardRoute =
+  AuthenticatedAppLeaderboardRouteImport.update({
+    id: '/leaderboard',
+    path: '/leaderboard',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppInvestRoute = AuthenticatedAppInvestRouteImport.update({
+  id: '/invest',
+  path: '/invest',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppDepositRoute = AuthenticatedAppDepositRouteImport.update({
+  id: '/deposit',
+  path: '/deposit',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/app': typeof AuthenticatedAppRouteWithChildren
+  '/app/deposit': typeof AuthenticatedAppDepositRoute
+  '/app/invest': typeof AuthenticatedAppInvestRoute
+  '/app/leaderboard': typeof AuthenticatedAppLeaderboardRoute
+  '/app/notifications': typeof AuthenticatedAppNotificationsRoute
+  '/app/portfolio': typeof AuthenticatedAppPortfolioRoute
+  '/app/referrals': typeof AuthenticatedAppReferralsRoute
+  '/app/withdraw': typeof AuthenticatedAppWithdrawRoute
   '/app/': typeof AuthenticatedAppIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/app/deposit': typeof AuthenticatedAppDepositRoute
+  '/app/invest': typeof AuthenticatedAppInvestRoute
+  '/app/leaderboard': typeof AuthenticatedAppLeaderboardRoute
+  '/app/notifications': typeof AuthenticatedAppNotificationsRoute
+  '/app/portfolio': typeof AuthenticatedAppPortfolioRoute
+  '/app/referrals': typeof AuthenticatedAppReferralsRoute
+  '/app/withdraw': typeof AuthenticatedAppWithdrawRoute
   '/app': typeof AuthenticatedAppIndexRoute
 }
 export interface FileRoutesById {
@@ -51,18 +112,53 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
+  '/_authenticated/app/deposit': typeof AuthenticatedAppDepositRoute
+  '/_authenticated/app/invest': typeof AuthenticatedAppInvestRoute
+  '/_authenticated/app/leaderboard': typeof AuthenticatedAppLeaderboardRoute
+  '/_authenticated/app/notifications': typeof AuthenticatedAppNotificationsRoute
+  '/_authenticated/app/portfolio': typeof AuthenticatedAppPortfolioRoute
+  '/_authenticated/app/referrals': typeof AuthenticatedAppReferralsRoute
+  '/_authenticated/app/withdraw': typeof AuthenticatedAppWithdrawRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/app' | '/app/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/app'
+    | '/app/deposit'
+    | '/app/invest'
+    | '/app/leaderboard'
+    | '/app/notifications'
+    | '/app/portfolio'
+    | '/app/referrals'
+    | '/app/withdraw'
+    | '/app/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/app'
+  to:
+    | '/'
+    | '/auth'
+    | '/app/deposit'
+    | '/app/invest'
+    | '/app/leaderboard'
+    | '/app/notifications'
+    | '/app/portfolio'
+    | '/app/referrals'
+    | '/app/withdraw'
+    | '/app'
   id:
     | '__root__'
     | '/'
     | '/auth'
     | '/_authenticated/app'
+    | '/_authenticated/app/deposit'
+    | '/_authenticated/app/invest'
+    | '/_authenticated/app/leaderboard'
+    | '/_authenticated/app/notifications'
+    | '/_authenticated/app/portfolio'
+    | '/_authenticated/app/referrals'
+    | '/_authenticated/app/withdraw'
     | '/_authenticated/app/'
   fileRoutesById: FileRoutesById
 }
@@ -102,14 +198,77 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAppIndexRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
+    '/_authenticated/app/withdraw': {
+      id: '/_authenticated/app/withdraw'
+      path: '/withdraw'
+      fullPath: '/app/withdraw'
+      preLoaderRoute: typeof AuthenticatedAppWithdrawRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/referrals': {
+      id: '/_authenticated/app/referrals'
+      path: '/referrals'
+      fullPath: '/app/referrals'
+      preLoaderRoute: typeof AuthenticatedAppReferralsRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/portfolio': {
+      id: '/_authenticated/app/portfolio'
+      path: '/portfolio'
+      fullPath: '/app/portfolio'
+      preLoaderRoute: typeof AuthenticatedAppPortfolioRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/notifications': {
+      id: '/_authenticated/app/notifications'
+      path: '/notifications'
+      fullPath: '/app/notifications'
+      preLoaderRoute: typeof AuthenticatedAppNotificationsRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/leaderboard': {
+      id: '/_authenticated/app/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/app/leaderboard'
+      preLoaderRoute: typeof AuthenticatedAppLeaderboardRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/invest': {
+      id: '/_authenticated/app/invest'
+      path: '/invest'
+      fullPath: '/app/invest'
+      preLoaderRoute: typeof AuthenticatedAppInvestRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/deposit': {
+      id: '/_authenticated/app/deposit'
+      path: '/deposit'
+      fullPath: '/app/deposit'
+      preLoaderRoute: typeof AuthenticatedAppDepositRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
   }
 }
 
 interface AuthenticatedAppRouteChildren {
+  AuthenticatedAppDepositRoute: typeof AuthenticatedAppDepositRoute
+  AuthenticatedAppInvestRoute: typeof AuthenticatedAppInvestRoute
+  AuthenticatedAppLeaderboardRoute: typeof AuthenticatedAppLeaderboardRoute
+  AuthenticatedAppNotificationsRoute: typeof AuthenticatedAppNotificationsRoute
+  AuthenticatedAppPortfolioRoute: typeof AuthenticatedAppPortfolioRoute
+  AuthenticatedAppReferralsRoute: typeof AuthenticatedAppReferralsRoute
+  AuthenticatedAppWithdrawRoute: typeof AuthenticatedAppWithdrawRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
 }
 
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
+  AuthenticatedAppDepositRoute: AuthenticatedAppDepositRoute,
+  AuthenticatedAppInvestRoute: AuthenticatedAppInvestRoute,
+  AuthenticatedAppLeaderboardRoute: AuthenticatedAppLeaderboardRoute,
+  AuthenticatedAppNotificationsRoute: AuthenticatedAppNotificationsRoute,
+  AuthenticatedAppPortfolioRoute: AuthenticatedAppPortfolioRoute,
+  AuthenticatedAppReferralsRoute: AuthenticatedAppReferralsRoute,
+  AuthenticatedAppWithdrawRoute: AuthenticatedAppWithdrawRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
 }
 
