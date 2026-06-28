@@ -31,13 +31,13 @@ function AppShell() {
     return () => { supabase.removeChannel(ch); };
   }, [user]);
 
-  const tabs = [
+  const tabs: Array<{ to: string; icon: typeof Home; label: string; exact?: boolean; badge?: number }> = [
     { to: "/app", icon: Home, label: "Home", exact: true },
     { to: "/app/invest", icon: TrendingUp, label: "Invest" },
     { to: "/app/portfolio", icon: Briefcase, label: "Portfolio" },
     { to: "/app/leaderboard", icon: Trophy, label: "Top" },
     { to: "/app/notifications", icon: Bell, label: "Alerts", badge: unread },
-  ] as const;
+  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -65,13 +65,13 @@ function AppShell() {
               const active = t.exact ? path === t.to : path.startsWith(t.to);
               const Icon = t.icon;
               return (
-                <Link key={t.to} to={t.to}
+                <Link key={t.to} to={t.to as never}
                   className={`relative flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-2xl transition ${
                     active ? "gradient-primary text-primary-foreground glow-primary" : "text-muted-foreground"
                   }`}>
                   <Icon className="h-5 w-5" />
                   <span className="text-[10px] font-semibold">{t.label}</span>
-                  {"badge" in t && t.badge ? (
+                  {t.badge ? (
                     <span className="absolute top-0 right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] grid place-items-center font-bold">
                       {t.badge}
                     </span>
