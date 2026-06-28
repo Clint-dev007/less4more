@@ -9,38 +9,260 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/app'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAppWithdrawRouteImport } from './routes/_authenticated/app.withdraw'
+import { Route as AuthenticatedAppReferralsRouteImport } from './routes/_authenticated/app.referrals'
+import { Route as AuthenticatedAppPortfolioRouteImport } from './routes/_authenticated/app.portfolio'
+import { Route as AuthenticatedAppNotificationsRouteImport } from './routes/_authenticated/app.notifications'
+import { Route as AuthenticatedAppLeaderboardRouteImport } from './routes/_authenticated/app.leaderboard'
+import { Route as AuthenticatedAppInvestRouteImport } from './routes/_authenticated/app.invest'
+import { Route as AuthenticatedAppDepositRouteImport } from './routes/_authenticated/app.deposit'
+import { Route as AuthenticatedAdminWithdrawalsRouteImport } from './routes/_authenticated/admin.withdrawals'
+import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
+import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
+import { Route as AuthenticatedAdminPlansRouteImport } from './routes/_authenticated/admin.plans'
+import { Route as AuthenticatedAdminDepositsRouteImport } from './routes/_authenticated/admin.deposits'
 
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAppRoute = AuthenticatedAppRouteImport.update({
+  id: '/_authenticated/app',
+  path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/_authenticated/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAppIndexRoute = AuthenticatedAppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAppWithdrawRoute =
+  AuthenticatedAppWithdrawRouteImport.update({
+    id: '/withdraw',
+    path: '/withdraw',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppReferralsRoute =
+  AuthenticatedAppReferralsRouteImport.update({
+    id: '/referrals',
+    path: '/referrals',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppPortfolioRoute =
+  AuthenticatedAppPortfolioRouteImport.update({
+    id: '/portfolio',
+    path: '/portfolio',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppNotificationsRoute =
+  AuthenticatedAppNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppLeaderboardRoute =
+  AuthenticatedAppLeaderboardRouteImport.update({
+    id: '/leaderboard',
+    path: '/leaderboard',
+    getParentRoute: () => AuthenticatedAppRoute,
+  } as any)
+const AuthenticatedAppInvestRoute = AuthenticatedAppInvestRouteImport.update({
+  id: '/invest',
+  path: '/invest',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAppDepositRoute = AuthenticatedAppDepositRouteImport.update({
+  id: '/deposit',
+  path: '/deposit',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
+const AuthenticatedAdminWithdrawalsRoute =
+  AuthenticatedAdminWithdrawalsRouteImport.update({
+    id: '/withdrawals',
+    path: '/withdrawals',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminSettingsRoute =
+  AuthenticatedAdminSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminPlansRoute = AuthenticatedAdminPlansRouteImport.update({
+  id: '/plans',
+  path: '/plans',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminDepositsRoute =
+  AuthenticatedAdminDepositsRouteImport.update({
+    id: '/deposits',
+    path: '/deposits',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/app': typeof AuthenticatedAppRouteWithChildren
+  '/admin/deposits': typeof AuthenticatedAdminDepositsRoute
+  '/admin/plans': typeof AuthenticatedAdminPlansRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/admin/withdrawals': typeof AuthenticatedAdminWithdrawalsRoute
+  '/app/deposit': typeof AuthenticatedAppDepositRoute
+  '/app/invest': typeof AuthenticatedAppInvestRoute
+  '/app/leaderboard': typeof AuthenticatedAppLeaderboardRoute
+  '/app/notifications': typeof AuthenticatedAppNotificationsRoute
+  '/app/portfolio': typeof AuthenticatedAppPortfolioRoute
+  '/app/referrals': typeof AuthenticatedAppReferralsRoute
+  '/app/withdraw': typeof AuthenticatedAppWithdrawRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/app/': typeof AuthenticatedAppIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/admin/deposits': typeof AuthenticatedAdminDepositsRoute
+  '/admin/plans': typeof AuthenticatedAdminPlansRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/admin/withdrawals': typeof AuthenticatedAdminWithdrawalsRoute
+  '/app/deposit': typeof AuthenticatedAppDepositRoute
+  '/app/invest': typeof AuthenticatedAppInvestRoute
+  '/app/leaderboard': typeof AuthenticatedAppLeaderboardRoute
+  '/app/notifications': typeof AuthenticatedAppNotificationsRoute
+  '/app/portfolio': typeof AuthenticatedAppPortfolioRoute
+  '/app/referrals': typeof AuthenticatedAppReferralsRoute
+  '/app/withdraw': typeof AuthenticatedAppWithdrawRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
+  '/app': typeof AuthenticatedAppIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/_authenticated/app': typeof AuthenticatedAppRouteWithChildren
+  '/_authenticated/admin/deposits': typeof AuthenticatedAdminDepositsRoute
+  '/_authenticated/admin/plans': typeof AuthenticatedAdminPlansRoute
+  '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
+  '/_authenticated/admin/withdrawals': typeof AuthenticatedAdminWithdrawalsRoute
+  '/_authenticated/app/deposit': typeof AuthenticatedAppDepositRoute
+  '/_authenticated/app/invest': typeof AuthenticatedAppInvestRoute
+  '/_authenticated/app/leaderboard': typeof AuthenticatedAppLeaderboardRoute
+  '/_authenticated/app/notifications': typeof AuthenticatedAppNotificationsRoute
+  '/_authenticated/app/portfolio': typeof AuthenticatedAppPortfolioRoute
+  '/_authenticated/app/referrals': typeof AuthenticatedAppReferralsRoute
+  '/_authenticated/app/withdraw': typeof AuthenticatedAppWithdrawRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/admin'
+    | '/app'
+    | '/admin/deposits'
+    | '/admin/plans'
+    | '/admin/settings'
+    | '/admin/users'
+    | '/admin/withdrawals'
+    | '/app/deposit'
+    | '/app/invest'
+    | '/app/leaderboard'
+    | '/app/notifications'
+    | '/app/portfolio'
+    | '/app/referrals'
+    | '/app/withdraw'
+    | '/admin/'
+    | '/app/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/admin/deposits'
+    | '/admin/plans'
+    | '/admin/settings'
+    | '/admin/users'
+    | '/admin/withdrawals'
+    | '/app/deposit'
+    | '/app/invest'
+    | '/app/leaderboard'
+    | '/app/notifications'
+    | '/app/portfolio'
+    | '/app/referrals'
+    | '/app/withdraw'
+    | '/admin'
+    | '/app'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/_authenticated/admin'
+    | '/_authenticated/app'
+    | '/_authenticated/admin/deposits'
+    | '/_authenticated/admin/plans'
+    | '/_authenticated/admin/settings'
+    | '/_authenticated/admin/users'
+    | '/_authenticated/admin/withdrawals'
+    | '/_authenticated/app/deposit'
+    | '/_authenticated/app/invest'
+    | '/_authenticated/app/leaderboard'
+    | '/_authenticated/app/notifications'
+    | '/_authenticated/app/portfolio'
+    | '/_authenticated/app/referrals'
+    | '/_authenticated/app/withdraw'
+    | '/_authenticated/admin/'
+    | '/_authenticated/app/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+  AuthenticatedAppRoute: typeof AuthenticatedAppRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +270,173 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/app': {
+      id: '/_authenticated/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AuthenticatedAppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/app/': {
+      id: '/_authenticated/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AuthenticatedAppIndexRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/app/withdraw': {
+      id: '/_authenticated/app/withdraw'
+      path: '/withdraw'
+      fullPath: '/app/withdraw'
+      preLoaderRoute: typeof AuthenticatedAppWithdrawRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/referrals': {
+      id: '/_authenticated/app/referrals'
+      path: '/referrals'
+      fullPath: '/app/referrals'
+      preLoaderRoute: typeof AuthenticatedAppReferralsRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/portfolio': {
+      id: '/_authenticated/app/portfolio'
+      path: '/portfolio'
+      fullPath: '/app/portfolio'
+      preLoaderRoute: typeof AuthenticatedAppPortfolioRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/notifications': {
+      id: '/_authenticated/app/notifications'
+      path: '/notifications'
+      fullPath: '/app/notifications'
+      preLoaderRoute: typeof AuthenticatedAppNotificationsRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/leaderboard': {
+      id: '/_authenticated/app/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/app/leaderboard'
+      preLoaderRoute: typeof AuthenticatedAppLeaderboardRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/invest': {
+      id: '/_authenticated/app/invest'
+      path: '/invest'
+      fullPath: '/app/invest'
+      preLoaderRoute: typeof AuthenticatedAppInvestRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/deposit': {
+      id: '/_authenticated/app/deposit'
+      path: '/deposit'
+      fullPath: '/app/deposit'
+      preLoaderRoute: typeof AuthenticatedAppDepositRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/admin/withdrawals': {
+      id: '/_authenticated/admin/withdrawals'
+      path: '/withdrawals'
+      fullPath: '/admin/withdrawals'
+      preLoaderRoute: typeof AuthenticatedAdminWithdrawalsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/users': {
+      id: '/_authenticated/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/settings': {
+      id: '/_authenticated/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AuthenticatedAdminSettingsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/plans': {
+      id: '/_authenticated/admin/plans'
+      path: '/plans'
+      fullPath: '/admin/plans'
+      preLoaderRoute: typeof AuthenticatedAdminPlansRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/deposits': {
+      id: '/_authenticated/admin/deposits'
+      path: '/deposits'
+      fullPath: '/admin/deposits'
+      preLoaderRoute: typeof AuthenticatedAdminDepositsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
   }
 }
 
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminDepositsRoute: typeof AuthenticatedAdminDepositsRoute
+  AuthenticatedAdminPlansRoute: typeof AuthenticatedAdminPlansRoute
+  AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
+  AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
+  AuthenticatedAdminWithdrawalsRoute: typeof AuthenticatedAdminWithdrawalsRoute
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminDepositsRoute: AuthenticatedAdminDepositsRoute,
+  AuthenticatedAdminPlansRoute: AuthenticatedAdminPlansRoute,
+  AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
+  AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
+  AuthenticatedAdminWithdrawalsRoute: AuthenticatedAdminWithdrawalsRoute,
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
+interface AuthenticatedAppRouteChildren {
+  AuthenticatedAppDepositRoute: typeof AuthenticatedAppDepositRoute
+  AuthenticatedAppInvestRoute: typeof AuthenticatedAppInvestRoute
+  AuthenticatedAppLeaderboardRoute: typeof AuthenticatedAppLeaderboardRoute
+  AuthenticatedAppNotificationsRoute: typeof AuthenticatedAppNotificationsRoute
+  AuthenticatedAppPortfolioRoute: typeof AuthenticatedAppPortfolioRoute
+  AuthenticatedAppReferralsRoute: typeof AuthenticatedAppReferralsRoute
+  AuthenticatedAppWithdrawRoute: typeof AuthenticatedAppWithdrawRoute
+  AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
+}
+
+const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
+  AuthenticatedAppDepositRoute: AuthenticatedAppDepositRoute,
+  AuthenticatedAppInvestRoute: AuthenticatedAppInvestRoute,
+  AuthenticatedAppLeaderboardRoute: AuthenticatedAppLeaderboardRoute,
+  AuthenticatedAppNotificationsRoute: AuthenticatedAppNotificationsRoute,
+  AuthenticatedAppPortfolioRoute: AuthenticatedAppPortfolioRoute,
+  AuthenticatedAppReferralsRoute: AuthenticatedAppReferralsRoute,
+  AuthenticatedAppWithdrawRoute: AuthenticatedAppWithdrawRoute,
+  AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
+}
+
+const AuthenticatedAppRouteWithChildren =
+  AuthenticatedAppRoute._addFileChildren(AuthenticatedAppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
+  AuthenticatedAppRoute: AuthenticatedAppRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
