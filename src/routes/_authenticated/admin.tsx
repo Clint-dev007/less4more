@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet, Link, useRouterState, useNavigate, redirect } from "@tanstack/react-router";
 import { LayoutDashboard, Users, Package, ArrowDownCircle, ArrowUpCircle, Settings, LogOut, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +6,20 @@ import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin")({
+  beforeLoad: async () => {
+    const { data: u } = await supabase.auth.getUser();
+    if (!u.user) throw redirect({ to: "/auth" });
+    const { data: roles } = await supabase
+      .from("user_roles").select("role").eq("user_id", u.user.id).eq("role", "admin");
+    const hasAdmin = !!roles?.length;
+    // Allow access if admin OR if no admin exists yet (so they can claim) OR they're the designated email
+    if (!hasAdmin) {
+      const { count } = await supabase
+        .from("user_roles").select("id", { count: "exact", head: true }).eq("role", "admin");
+      const isDesignated = u.user.email?.toLowerCase() === "idehenclintonn@gmail.com";
+      if ((count ?? 0) > 0 && !isDesignated) throw redirect({ to: "/app" });
+    }
+  },
   component: AdminShell,
 });
 
