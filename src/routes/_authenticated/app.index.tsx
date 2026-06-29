@@ -33,6 +33,7 @@ function HomePage() {
   const [tx, setTx] = useState<Array<{ id: string; kind: string; amount: number; status: string; at: string }>>([]);
   const [hidden, setHidden] = useState(false);
 
+  const { reload } = useAuth();
   useEffect(() => {
     if (!user) return;
     const load = async () => {
@@ -45,8 +46,12 @@ function HomePage() {
         ...(w.data ?? []).map((x) => ({ id: "w" + x.id, kind: "Withdrawal", amount: Number(x.amount), status: x.status, at: x.created_at })),
       ].sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime()).slice(0, 5);
       setTx(items);
+      reload();
     };
     load();
+    const i = setInterval(load, 2000);
+    return () => clearInterval(i);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const balance = Number(profile?.balance ?? 0);
