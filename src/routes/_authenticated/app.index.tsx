@@ -29,11 +29,9 @@ function Donut({ invested, returns, balance }: { invested: number; returns: numb
 }
 
 function HomePage() {
-  const { profile, user } = useAuth();
+  const { profile, user, reload } = useAuth();
   const [tx, setTx] = useState<Array<{ id: string; kind: string; amount: number; status: string; at: string }>>([]);
   const [hidden, setHidden] = useState(false);
-
-  const { reload } = useAuth();
   useEffect(() => {
     if (!user) return;
     const load = async () => {
