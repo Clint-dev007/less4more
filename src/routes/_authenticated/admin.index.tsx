@@ -13,7 +13,7 @@ function Overview() {
   const [feed, setFeed] = useState<Array<{ id: string; t: string; at: string }>>([]);
 
   useEffect(() => {
-    (async () => {
+    const load = async () => {
       const [a, b, c, d, e, f, g] = await Promise.all([
         supabase.from("profiles").select("invested"),
         supabase.from("profiles").select("id", { count: "exact", head: true }),
@@ -35,7 +35,10 @@ function Overview() {
         ...(g.data ?? []).map((x) => ({ id: "w"+x.id, t: `Withdrawal ${ngn(x.amount)} · ${x.status}`, at: x.created_at })),
       ].sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime()).slice(0, 8);
       setFeed(items);
-    })();
+    };
+    load();
+    const i = setInterval(load, 2000);
+    return () => clearInterval(i);
   }, []);
 
   const cards = [
