@@ -9,13 +9,14 @@ export const Route = createFileRoute("/_authenticated/admin/plans")({
   component: PlansPage,
 });
 
+type Category = "thrift" | "agriculture" | "property" | "finance";
 type Plan = {
-  id: string; name: string; icon: string; category: string;
+  id: string; name: string; icon: string; category: Category;
   roi: number; duration_days: number; min_amount: number;
   description: string; active: boolean;
 };
 
-const CATS = ["thrift","agriculture","property","finance"];
+const CATS: Category[] = ["thrift","agriculture","property","finance"];
 
 function PlansPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
@@ -63,7 +64,7 @@ function PlansPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           <Input label="Name" v={draft.name ?? ""} on={(v) => setDraft({ ...draft, name: v })} />
           <Input label="Icon (emoji)" v={draft.icon ?? ""} on={(v) => setDraft({ ...draft, icon: v })} />
-          <Select label="Category" v={draft.category ?? ""} on={(v) => setDraft({ ...draft, category: v })} options={CATS} />
+          <Select label="Category" v={draft.category ?? ""} on={(v) => setDraft({ ...draft, category: v as Category })} options={CATS} />
           <Input label="ROI %" type="number" v={String(draft.roi ?? 0)} on={(v) => setDraft({ ...draft, roi: +v })} />
           <Input label="Duration (days)" type="number" v={String(draft.duration_days ?? 0)} on={(v) => setDraft({ ...draft, duration_days: +v })} />
           <Input label="Min amount" type="number" v={String(draft.min_amount ?? 0)} on={(v) => setDraft({ ...draft, min_amount: +v })} />
@@ -80,7 +81,7 @@ function PlansPage() {
             <div className="grid grid-cols-2 md:grid-cols-7 gap-2 items-end">
               <Input label="Icon" v={p.icon} on={(v) => setPlans((arr) => arr.map((x) => x.id === p.id ? { ...x, icon: v } : x))} />
               <Input label="Name" v={p.name} on={(v) => setPlans((arr) => arr.map((x) => x.id === p.id ? { ...x, name: v } : x))} />
-              <Select label="Category" v={p.category} on={(v) => setPlans((arr) => arr.map((x) => x.id === p.id ? { ...x, category: v } : x))} options={CATS} />
+              <Select label="Category" v={p.category} on={(v) => setPlans((arr) => arr.map((x) => x.id === p.id ? { ...x, category: v as Category } : x))} options={CATS} />
               <Input label="ROI %" type="number" v={String(p.roi)} on={(v) => setPlans((arr) => arr.map((x) => x.id === p.id ? { ...x, roi: +v } : x))} />
               <Input label="Days" type="number" v={String(p.duration_days)} on={(v) => setPlans((arr) => arr.map((x) => x.id === p.id ? { ...x, duration_days: +v } : x))} />
               <Input label="Min" type="number" v={String(p.min_amount)} on={(v) => setPlans((arr) => arr.map((x) => x.id === p.id ? { ...x, min_amount: +v } : x))} />
