@@ -21,8 +21,9 @@ function UsersPage() {
   const [rows, setRows] = useState<Row[]>([]);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [q, setQ] = useState("");
-  const [editing, setEditing] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Row | null>(null);
   const [editName, setEditName] = useState("");
+  const [saving, setSaving] = useState(false);
   const deleteUserFn = useServerFn(adminDeleteUser);
 
   async function load() {
@@ -47,13 +48,16 @@ function UsersPage() {
     load();
   }
 
-  async function saveName(id: string) {
+  async function saveName() {
+    if (!selected) return;
     const name = editName.trim();
     if (!name) { toast.error("Name required"); return; }
-    const { error } = await supabase.from("profiles").update({ name }).eq("id", id);
+    setSaving(true);
+    const { error } = await supabase.from("profiles").update({ name }).eq("id", selected.id);
+    setSaving(false);
     if (error) { toast.error(error.message); return; }
     toast.success("Name updated");
-    setEditing(null);
+    setSelected({ ...selected, name });
     load();
   }
 
@@ -62,6 +66,7 @@ function UsersPage() {
     try {
       await deleteUserFn({ data: { userId: id } });
       toast.success("User deleted");
+      setSelected(null);
       load();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed");
@@ -91,20 +96,9 @@ function UsersPage() {
           </thead>
           <tbody>
             {filtered.map((u) => (
-              <tr key={u.id} className="border-t border-border">
-                <td className="px-3 py-3 font-semibold">
-                  {editing === u.id ? (
-                    <div className="flex gap-1">
-                      <input value={editName} onChange={(e) => setEditName(e.target.value)}
-                        className="px-2 py-1 rounded bg-secondary border border-border text-xs w-32" />
-                      <button onClick={() => saveName(u.id)} className="px-2 py-1 rounded bg-primary text-primary-foreground text-xs">Save</button>
-                      <button onClick={() => setEditing(null)} className="px-2 py-1 rounded bg-secondary text-xs">×</button>
-                    </div>
-                  ) : (
-                    <button onClick={() => { setEditing(u.id); setEditName(u.name || ""); }}
-                      className="hover:text-primary text-left">{u.name || "—"}</button>
-                  )}
-                </td>
+              <tr key={u.id} className="border-t border-border hover:bg-secondary/30 cursor-pointer"
+                onClick={() => { setSelected(u); setEditName(u.name || ""); }}>
+                <td className="px-3 py-3 font-semibold text-primary">{u.name || "—"}</td>
                 <td className="px-3 py-3">{u.phone ?? "—"}</td>
                 <td className="px-3 py-3 font-mono text-xs">{u.ref_code}</td>
                 <td className="px-3 py-3">{ngn(u.balance)}</td>
@@ -121,7 +115,7 @@ function UsersPage() {
                   </span>
                 </td>
                 <td className="px-3 py-3">
-                  <div className="flex gap-1">
+                  <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
                     <button onClick={() => toggle(u.id, u.status)}
                       className="px-2 py-1 rounded-lg bg-secondary hover:bg-primary/20 text-xs font-semibold whitespace-nowrap">
                       {u.status === "active" ? "Suspend" : "Activate"}
@@ -137,6 +131,74 @@ function UsersPage() {
           </tbody>
         </table>
       </div>
+
+      {selected && (
+        <div className="fixed inset-0 z-50 bg-black/70 flex items-end sm:items-center justify-center p-0 sm:p-4"
+          onClick={() => setSelected(null)}>
+          <div className="card-3d bg-card w-full sm:max-w-lg rounded-t-3xl sm:rounded-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-start justify-between">
+              <div>
+                <h2 className="text-xl font-bold">User details</h2>
+                <p className="text-xs font-mono text-muted-foreground break-all">{selected.id}</p>
+              </div>
+              <button onClick={() => setSelected(null)} className="text-2xl leading-none px-2">×</button>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs uppercase text-muted-foreground">Full name</label>
+              <div className="flex gap-2">
+                <input value={editName} onChange={(e) => setEditName(e.target.value)}
+                  className="flex-1 px-3 py-2 rounded-xl bg-secondary border border-border focus:border-primary focus:outline-none text-sm" />
+                <button onClick={saveName} disabled={saving}
+                  className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-semibold disabled:opacity-50">
+                  {saving ? "..." : "Save"}
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <Detail label="Phone" value={selected.phone ?? "—"} />
+              <Detail label="Ref code" value={selected.ref_code} mono />
+              <Detail label="Balance" value={ngn(selected.balance)} />
+              <Detail label="Invested" value={ngn(selected.invested)} />
+              <Detail label="Returns" value={ngn(selected.returns)} />
+              <Detail label="Referrals" value={String(counts[selected.id] ?? 0)} />
+              <Detail label="Status" value={selected.status} />
+              <Detail label="Joined" value={shortDate(selected.joined_at)} />
+            </div>
+
+            <div className="space-y-2 pt-2 border-t border-border">
+              <h3 className="text-xs uppercase text-muted-foreground font-semibold">Bank account</h3>
+              <div className="grid grid-cols-1 gap-2 text-sm">
+                <Detail label="Bank name" value={selected.bank_name ?? "—"} />
+                <Detail label="Account number" value={selected.account_no ?? "—"} mono />
+                <Detail label="Account name" value={selected.account_name ?? "—"} />
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <button onClick={() => toggle(selected.id, selected.status)}
+                className="flex-1 px-4 py-2 rounded-xl bg-secondary hover:bg-primary/20 text-sm font-semibold">
+                {selected.status === "active" ? "Suspend user" : "Activate user"}
+              </button>
+              <button onClick={() => removeUser(selected.id, selected.name)}
+                className="flex-1 px-4 py-2 rounded-xl bg-destructive/20 text-destructive hover:bg-destructive/30 text-sm font-semibold">
+                Delete user
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Detail({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div className="space-y-0.5">
+      <div className="text-xs uppercase text-muted-foreground">{label}</div>
+      <div className={`font-semibold break-all ${mono ? "font-mono text-xs" : ""}`}>{value}</div>
     </div>
   );
 }
