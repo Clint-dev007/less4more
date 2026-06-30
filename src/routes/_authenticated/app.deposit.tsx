@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { ngn } from "@/lib/format";
 import { Copy, Check } from "lucide-react";
+import { SuccessAnimation } from "@/components/success-animation";
 
 export const Route = createFileRoute("/_authenticated/app/deposit")({
   component: Deposit,
@@ -17,6 +18,7 @@ function Deposit() {
   const [ref, setRef] = useState("");
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     supabase.from("admin_settings").select("bank_name, account_no, account_name").eq("id", 1).maybeSingle()
@@ -30,8 +32,8 @@ function Deposit() {
     const { error } = await supabase.from("deposits").insert({ user_id: user.id, amount, ref });
     setLoading(false);
     if (error) { toast.error(error.message); return; }
-    toast.success("Admin notified. You'll be credited once verified.");
     setRef("");
+    setSuccess(true);
   }
 
   async function copy() {
@@ -77,6 +79,7 @@ function Deposit() {
           {loading ? "Sending…" : "Notify admin"}
         </button>
       </div>
+      <SuccessAnimation show={success} message="Admin notified" onDone={() => setSuccess(false)} />
     </div>
   );
 }
