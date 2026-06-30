@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { Home, TrendingUp, Briefcase, Trophy, Bell, LogOut, Shield } from "lucide-react";
+import { Home, TrendingUp, Briefcase, Trophy, Bell, LogOut, Shield, ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -39,6 +39,9 @@ function AppShell() {
     { to: "/app/notifications", icon: Bell, label: "Alerts", badge: unread },
   ];
 
+  const tabPaths = new Set(tabs.map((t) => t.to));
+  const showBack = !tabPaths.has(path);
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-md mx-auto pb-24 relative">
@@ -54,6 +57,16 @@ function AppShell() {
             <LogOut className="h-4 w-4 text-muted-foreground" />
           </button>
         </div>
+        {showBack && (
+          <button
+            onClick={() => { if (window.history.length > 1) window.history.back(); else nav({ to: "/app" }); }}
+            className="fixed top-3 left-3 z-50 p-2 rounded-full bg-card border border-border flex items-center gap-1.5 px-3"
+            title="Back"
+          >
+            <ArrowLeft className="h-4 w-4 text-primary" />
+            <span className="text-xs font-semibold">Back</span>
+          </button>
+        )}
         <Outlet />
       </div>
 
