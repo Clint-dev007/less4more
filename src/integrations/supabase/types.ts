@@ -345,7 +345,12 @@ export type Database = {
       app_role: "admin" | "user"
       deposit_status: "pending" | "approved" | "rejected"
       investment_status: "active" | "completed" | "cancelled"
-      plan_category: "thrift" | "agriculture" | "property" | "finance"
+      plan_category:
+        | "thrift"
+        | "agriculture"
+        | "property"
+        | "finance"
+        | "poultry"
       withdrawal_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
@@ -477,7 +482,13 @@ export const Constants = {
       app_role: ["admin", "user"],
       deposit_status: ["pending", "approved", "rejected"],
       investment_status: ["active", "completed", "cancelled"],
-      plan_category: ["thrift", "agriculture", "property", "finance"],
+      plan_category: [
+        "thrift",
+        "agriculture",
+        "property",
+        "finance",
+        "poultry",
+      ],
       withdrawal_status: ["pending", "approved", "rejected"],
     },
   },
