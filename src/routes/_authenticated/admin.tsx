@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, Link, useRouterState, useNavigate, redirect } from "@tanstack/react-router";
-import { LayoutDashboard, Users, Package, ArrowDownCircle, ArrowUpCircle, Settings, LogOut, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, Users, Package, ArrowDownCircle, ArrowUpCircle, Settings, LogOut, ShieldCheck, ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -108,7 +108,11 @@ function AdminShell() {
       </aside>
       <main className="flex-1 min-w-0 overflow-x-auto">
         {/* mobile top bar */}
-        <div className="md:hidden border-b border-border bg-card px-4 py-3 flex items-center gap-2 overflow-x-auto">
+        <div className="md:hidden border-b border-border bg-card px-4 py-3 flex items-center gap-2 sticky top-0 z-30">
+          <Link to="/app" className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold gradient-primary text-primary-foreground glow-primary">
+            <ArrowLeft className="h-3.5 w-3.5" /> User app
+          </Link>
+          <div className="flex items-center gap-2 overflow-x-auto">
           {items.map((it) => {
             const active = it.exact ? path === it.to : path.startsWith(it.to);
             const I = it.icon;
@@ -121,6 +125,7 @@ function AdminShell() {
               </Link>
             );
           })}
+          </div>
         </div>
         <Outlet />
       </main>
