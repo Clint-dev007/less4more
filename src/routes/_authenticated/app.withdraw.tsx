@@ -5,7 +5,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { ngn } from "@/lib/format";
 import { SuccessAnimation } from "@/components/success-animation";
-import { useState as useReactState } from "react";
 
 export const Route = createFileRoute("/_authenticated/app/withdraw")({
   component: Withdraw,
