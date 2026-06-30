@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ngn, relTime } from "@/lib/format";
 import { toast } from "sonner";
 import { Check, X } from "lucide-react";
+import { SuccessAnimation } from "@/components/success-animation";
 
 export const Route = createFileRoute("/_authenticated/admin/withdrawals")({
   component: WdAdmin,
@@ -18,6 +19,7 @@ type W = {
 function WdAdmin() {
   const [rows, setRows] = useState<W[]>([]);
   const [filter, setFilter] = useState("pending");
+  const [success, setSuccess] = useState<string | null>(null);
 
   async function load() {
     let q = supabase.from("withdrawals").select("id, amount, status, created_at, user_id, bank_name, account_no, account_name, payout_day, profiles(name, phone, ref_code)").order("created_at", { ascending: false });
@@ -30,13 +32,13 @@ function WdAdmin() {
   async function approve(id: string) {
     const { error } = await supabase.rpc("approve_withdrawal", { _id: id });
     if (error) { toast.error(error.message); return; }
-    toast.success("Approved");
+    setSuccess("Withdrawal approved");
     load();
   }
   async function reject(id: string) {
     const { error } = await supabase.rpc("reject_withdrawal", { _id: id });
     if (error) { toast.error(error.message); return; }
-    toast.success("Rejected & funds returned");
+    setSuccess("Withdrawal rejected");
     load();
   }
 
@@ -97,6 +99,7 @@ function WdAdmin() {
           </tbody>
         </table>
       </div>
+      <SuccessAnimation show={!!success} message={success ?? ""} onDone={() => setSuccess(null)} />
     </div>
   );
 }
