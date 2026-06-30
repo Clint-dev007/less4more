@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { ngn } from "@/lib/format";
+import { SuccessAnimation } from "@/components/success-animation";
+import { useState as useReactState } from "react";
 
 export const Route = createFileRoute("/_authenticated/app/withdraw")({
   component: Withdraw,
@@ -19,6 +21,7 @@ function Withdraw() {
   const [amount, setAmount] = useState<number>(0);
   const [day, setDay] = useState("Monday");
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
 
   async function saveBank() {
     if (accountNo.length !== 10) { toast.error("Account must be 10 digits"); return; }
@@ -27,8 +30,8 @@ function Withdraw() {
       bank_name: bankName, account_no: accountNo, account_name: accountName
     }).eq("id", profile.id);
     if (error) { toast.error(error.message); return; }
-    toast.success("Bank saved");
     reload();
+    setSuccess("Bank saved");
   }
 
   async function submit() {
@@ -38,9 +41,9 @@ function Withdraw() {
     const { error } = await supabase.rpc("create_withdrawal", { _amount: amount, _payout_day: day });
     setLoading(false);
     if (error) { toast.error(error.message); return; }
-    toast.success("Withdrawal request submitted");
     setAmount(0);
     reload();
+    setSuccess("Withdrawal submitted");
   }
 
   return (
@@ -78,6 +81,7 @@ function Withdraw() {
           {loading ? "Submitting…" : "Submit request"}
         </button>
       </div>
+      <SuccessAnimation show={!!success} message={success ?? ""} onDone={() => setSuccess(null)} />
     </div>
   );
 }
