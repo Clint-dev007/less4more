@@ -148,9 +148,11 @@ export type Database = {
           duration_days: number
           icon: string
           id: string
+          image_url: string | null
           min_amount: number
           name: string
           roi: number
+          subtype: string | null
         }
         Insert: {
           active?: boolean
@@ -160,9 +162,11 @@ export type Database = {
           duration_days: number
           icon?: string
           id?: string
+          image_url?: string | null
           min_amount: number
           name: string
           roi: number
+          subtype?: string | null
         }
         Update: {
           active?: boolean
@@ -172,9 +176,11 @@ export type Database = {
           duration_days?: number
           icon?: string
           id?: string
+          image_url?: string | null
           min_amount?: number
           name?: string
           roi?: number
+          subtype?: string | null
         }
         Relationships: []
       }
