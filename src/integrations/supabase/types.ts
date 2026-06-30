@@ -148,9 +148,11 @@ export type Database = {
           duration_days: number
           icon: string
           id: string
+          image_url: string | null
           min_amount: number
           name: string
           roi: number
+          subtype: string | null
         }
         Insert: {
           active?: boolean
@@ -160,9 +162,11 @@ export type Database = {
           duration_days: number
           icon?: string
           id?: string
+          image_url?: string | null
           min_amount: number
           name: string
           roi: number
+          subtype?: string | null
         }
         Update: {
           active?: boolean
@@ -172,9 +176,11 @@ export type Database = {
           duration_days?: number
           icon?: string
           id?: string
+          image_url?: string | null
           min_amount?: number
           name?: string
           roi?: number
+          subtype?: string | null
         }
         Relationships: []
       }
@@ -345,7 +351,12 @@ export type Database = {
       app_role: "admin" | "user"
       deposit_status: "pending" | "approved" | "rejected"
       investment_status: "active" | "completed" | "cancelled"
-      plan_category: "thrift" | "agriculture" | "property" | "finance"
+      plan_category:
+        | "thrift"
+        | "agriculture"
+        | "property"
+        | "finance"
+        | "poultry"
       withdrawal_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
@@ -477,7 +488,13 @@ export const Constants = {
       app_role: ["admin", "user"],
       deposit_status: ["pending", "approved", "rejected"],
       investment_status: ["active", "completed", "cancelled"],
-      plan_category: ["thrift", "agriculture", "property", "finance"],
+      plan_category: [
+        "thrift",
+        "agriculture",
+        "property",
+        "finance",
+        "poultry",
+      ],
       withdrawal_status: ["pending", "approved", "rejected"],
     },
   },

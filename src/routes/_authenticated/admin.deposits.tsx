@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ngn, relTime } from "@/lib/format";
 import { toast } from "sonner";
 import { Check, X } from "lucide-react";
+import { SuccessAnimation } from "@/components/success-animation";
 
 export const Route = createFileRoute("/_authenticated/admin/deposits")({
   component: DepositsAdmin,
@@ -17,6 +18,7 @@ type D = {
 function DepositsAdmin() {
   const [rows, setRows] = useState<D[]>([]);
   const [filter, setFilter] = useState("pending");
+  const [success, setSuccess] = useState<string | null>(null);
 
   async function load() {
     let q = supabase.from("deposits").select("id, amount, ref, status, created_at, user_id, profiles(name, phone, ref_code)").order("created_at", { ascending: false });
@@ -29,13 +31,13 @@ function DepositsAdmin() {
   async function approve(id: string) {
     const { error } = await supabase.rpc("approve_deposit", { _deposit_id: id });
     if (error) { toast.error(error.message); return; }
-    toast.success("Approved & wallet credited");
+    setSuccess("Deposit approved");
     load();
   }
   async function reject(id: string) {
     const { error } = await supabase.rpc("reject_deposit", { _deposit_id: id });
     if (error) { toast.error(error.message); return; }
-    toast.success("Rejected");
+    setSuccess("Deposit rejected");
     load();
   }
 
@@ -91,6 +93,7 @@ function DepositsAdmin() {
           </tbody>
         </table>
       </div>
+      <SuccessAnimation show={!!success} message={success ?? ""} onDone={() => setSuccess(null)} />
     </div>
   );
 }

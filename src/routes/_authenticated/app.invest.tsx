@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { ngn } from "@/lib/format";
 import { toast } from "sonner";
 import { X, Sparkles } from "lucide-react";
+import { SuccessAnimation } from "@/components/success-animation";
 
 export const Route = createFileRoute("/_authenticated/app/invest")({
   component: InvestPage,
@@ -15,6 +16,7 @@ type Plan = {
   id: string; name: string; icon: string; category: string;
   roi: number; duration_days: number; min_amount: number;
   description: string; active: boolean;
+  subtype: string | null; image_url: string | null;
 };
 
 const CATS = [
@@ -23,6 +25,7 @@ const CATS = [
   { id: "agriculture", label: "Agro" },
   { id: "property", label: "Property" },
   { id: "finance", label: "Finance" },
+  { id: "poultry", label: "Poultry" },
 ];
 
 function InvestPage() {
@@ -30,6 +33,7 @@ function InvestPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [cat, setCat] = useState("all");
   const [open, setOpen] = useState<Plan | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.from("plans").select("*").eq("active", true).order("min_amount")
@@ -62,12 +66,21 @@ function InvestPage() {
           <motion.button key={p.id} onClick={() => setOpen(p)} whileTap={{ scale: 0.98 }}
             className="w-full text-left card-3d rounded-3xl p-4">
             <div className="flex items-start gap-3">
-              <div className="h-14 w-14 rounded-2xl gradient-primary glow-primary grid place-items-center text-2xl animate-float">
-                {p.icon}
-              </div>
+              {p.image_url ? (
+                <img src={p.image_url} alt={p.name} className="h-16 w-16 rounded-2xl object-cover glow-primary" />
+              ) : (
+                <div className="h-14 w-14 rounded-2xl gradient-primary glow-primary grid place-items-center text-2xl animate-float">
+                  {p.icon}
+                </div>
+              )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
-                  <div className="font-semibold">{p.name}</div>
+                  <div className="font-semibold">
+                    {p.name}
+                    {p.category === "poultry" && p.subtype && (
+                      <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-primary/15 text-primary uppercase">{p.subtype}</span>
+                    )}
+                  </div>
                   <div className="text-gold font-bold">+{p.roi}%</div>
                 </div>
                 <div className="text-xs text-muted-foreground line-clamp-1">{p.description}</div>
@@ -84,15 +97,18 @@ function InvestPage() {
       <AnimatePresence>
         {open && (
           <InvestModal plan={open} balance={Number(profile?.balance ?? 0)}
-            onClose={() => setOpen(null)} onDone={() => { reload(); setOpen(null); }} />
+            onClose={() => setOpen(null)}
+            onDone={(name) => { reload(); setOpen(null); setSuccess(`Invested in ${name}`); }} />
         )}
       </AnimatePresence>
+
+      <SuccessAnimation show={!!success} message={success ?? ""} onDone={() => setSuccess(null)} />
     </div>
   );
 }
 
 function InvestModal({ plan, balance, onClose, onDone }: {
-  plan: Plan; balance: number; onClose: () => void; onDone: () => void;
+  plan: Plan; balance: number; onClose: () => void; onDone: (planName: string) => void;
 }) {
   const [amount, setAmount] = useState<number>(plan.min_amount);
   const [loading, setLoading] = useState(false);
@@ -105,8 +121,7 @@ function InvestModal({ plan, balance, onClose, onDone }: {
     const { error } = await supabase.rpc("create_investment", { _plan_id: plan.id, _amount: amount });
     setLoading(false);
     if (error) { toast.error(error.message); return; }
-    toast.success(`Invested ${ngn(amount)} in ${plan.name}`);
-    onDone();
+    onDone(plan.name);
   }
 
   return (
