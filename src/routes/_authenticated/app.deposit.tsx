@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { ngn } from "@/lib/format";
 import { Copy, Check } from "lucide-react";
-import { SuccessAnimation } from "@/components/success-animation";
+import { SuccessAnimation, fileToCompressedDataUrl } from "@/components/success-animation";
 
 export const Route = createFileRoute("/_authenticated/app/deposit")({
   component: Deposit,
@@ -16,6 +16,7 @@ function Deposit() {
   const [bank, setBank] = useState<{ bank_name: string; account_no: string; account_name: string } | null>(null);
   const [amount, setAmount] = useState<number>(5000);
   const [ref, setRef] = useState("");
+  const [receipt, setReceipt] = useState<string>("");
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -28,11 +29,12 @@ function Deposit() {
   async function submit() {
     if (!user) return;
     if (amount < 100 || !ref) { toast.error("Enter amount and reference"); return; }
+    if (!receipt) { toast.error("Upload your payment receipt"); return; }
     setLoading(true);
-    const { error } = await supabase.from("deposits").insert({ user_id: user.id, amount, ref });
+    const { error } = await supabase.from("deposits").insert({ user_id: user.id, amount, ref, receipt_url: receipt });
     setLoading(false);
     if (error) { toast.error(error.message); return; }
-    setRef("");
+    setRef(""); setReceipt("");
     setSuccess(true);
   }
 
@@ -73,6 +75,17 @@ function Deposit() {
           <span className="text-xs text-muted-foreground">Bank transfer reference</span>
           <input value={ref} onChange={(e) => setRef(e.target.value)} placeholder="e.g. TRF/2026/12345"
             className="mt-1 w-full px-4 py-3 rounded-xl bg-secondary border border-border focus:border-primary focus:outline-none" />
+        </label>
+        <label className="block">
+          <span className="text-xs text-muted-foreground">Payment receipt (screenshot)</span>
+          <input type="file" accept="image/*" onChange={async (e) => {
+            const f = e.target.files?.[0]; if (!f) return;
+            try { setReceipt(await fileToCompressedDataUrl(f)); }
+            catch { toast.error("Could not read image"); }
+          }} className="mt-1 w-full text-xs file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-primary file:text-primary-foreground file:font-semibold" />
+          {receipt && (
+            <img src={receipt} alt="Receipt preview" className="mt-2 max-h-48 rounded-xl border border-border object-contain bg-secondary" />
+          )}
         </label>
         <button onClick={submit} disabled={loading}
           className="w-full py-3.5 rounded-2xl gradient-primary text-primary-foreground font-bold glow-primary disabled:opacity-60">
