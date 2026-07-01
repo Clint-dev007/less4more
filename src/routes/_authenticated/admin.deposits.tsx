@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_authenticated/admin/deposits")({
 
 type D = {
   id: string; amount: number; ref: string; status: string; created_at: string; user_id: string;
-  profiles: { name: string; phone: string | null; ref_code: string } | null;
+  profile?: { name: string; phone: string | null; ref_code: string } | null;
 };
 
 function DepositsAdmin() {
@@ -21,10 +21,18 @@ function DepositsAdmin() {
   const [success, setSuccess] = useState<string | null>(null);
 
   async function load() {
-    let q = supabase.from("deposits").select("id, amount, ref, status, created_at, user_id, profiles(name, phone, ref_code)").order("created_at", { ascending: false });
+    let q = supabase.from("deposits").select("id, amount, ref, status, created_at, user_id").order("created_at", { ascending: false });
     if (filter !== "all") q = q.eq("status", filter as never);
-    const { data } = await q;
-    setRows((data ?? []) as unknown as D[]);
+    const { data, error } = await q;
+    if (error) { console.error("deposits load", error); return; }
+    const list = (data ?? []) as D[];
+    const ids = Array.from(new Set(list.map((d) => d.user_id)));
+    if (ids.length) {
+      const { data: profs } = await supabase.from("profiles").select("id, name, phone, ref_code").in("id", ids);
+      const map = new Map((profs ?? []).map((p) => [p.id, p]));
+      list.forEach((d) => { d.profile = map.get(d.user_id) as D["profile"] ?? null; });
+    }
+    setRows(list);
   }
   useEffect(() => {
     load();
@@ -73,8 +81,8 @@ function DepositsAdmin() {
             {rows.map((d) => (
               <tr key={d.id} className="border-t border-border">
                 <td className="px-3 py-3">
-                  <div className="font-semibold">{d.profiles?.name || "—"}</div>
-                  <div className="text-xs text-muted-foreground">{d.profiles?.phone || d.profiles?.ref_code}</div>
+                  <div className="font-semibold">{d.profile?.name || "—"}</div>
+                  <div className="text-xs text-muted-foreground">{d.profile?.phone || d.profile?.ref_code}</div>
                 </td>
                 <td className="px-3 py-3 font-bold">{ngn(d.amount)}</td>
                 <td className="px-3 py-3 font-mono text-xs">{d.ref}</td>
