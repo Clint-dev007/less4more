@@ -27,7 +27,11 @@ function WdAdmin() {
     const { data } = await q;
     setRows((data ?? []) as unknown as W[]);
   }
-  useEffect(() => { load(); }, [filter]);
+  useEffect(() => {
+    load();
+    const i = setInterval(load, 2000);
+    return () => clearInterval(i);
+  }, [filter]);
 
   async function approve(id: string) {
     const { error } = await supabase.rpc("approve_withdrawal", { _id: id });

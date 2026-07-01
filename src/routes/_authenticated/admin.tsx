@@ -28,6 +28,21 @@ function AdminShell() {
   const nav = useNavigate();
   const { isAdmin, user, loading } = useAuth();
   const [claimable, setClaimable] = useState(false);
+  const [pending, setPending] = useState({ d: 0, w: 0 });
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    const load = async () => {
+      const [d, w] = await Promise.all([
+        supabase.from("deposits").select("id", { count: "exact", head: true }).eq("status", "pending"),
+        supabase.from("withdrawals").select("id", { count: "exact", head: true }).eq("status", "pending"),
+      ]);
+      setPending({ d: d.count ?? 0, w: w.count ?? 0 });
+    };
+    load();
+    const i = setInterval(load, 2000);
+    return () => clearInterval(i);
+  }, [isAdmin]);
 
   useEffect(() => {
     if (loading || !user || isAdmin) return;
@@ -72,10 +87,10 @@ function AdminShell() {
     { to: "/admin", icon: LayoutDashboard, label: "Overview", exact: true },
     { to: "/admin/users", icon: Users, label: "Users" },
     { to: "/admin/plans", icon: Package, label: "Plans" },
-    { to: "/admin/deposits", icon: ArrowDownCircle, label: "Deposits" },
-    { to: "/admin/withdrawals", icon: ArrowUpCircle, label: "Withdrawals" },
+    { to: "/admin/deposits", icon: ArrowDownCircle, label: "Deposits", badge: pending.d },
+    { to: "/admin/withdrawals", icon: ArrowUpCircle, label: "Withdrawals", badge: pending.w },
     { to: "/admin/settings", icon: Settings, label: "Settings" },
-  ] as Array<{ to: string; icon: typeof LayoutDashboard; label: string; exact?: boolean }>;
+  ] as Array<{ to: string; icon: typeof LayoutDashboard; label: string; exact?: boolean; badge?: number }>;
 
   return (
     <div className="dark min-h-screen bg-background text-foreground flex">
@@ -93,7 +108,8 @@ function AdminShell() {
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${
                   active ? "gradient-sky text-primary-foreground glow-neon" : "text-sidebar-foreground/80 hover:bg-sidebar-accent"
                 }`}>
-                <I className="h-4 w-4" /> {it.label}
+                <I className="h-4 w-4" /> <span className="flex-1">{it.label}</span>
+                {it.badge ? <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-gold text-gold-foreground animate-pulse">{it.badge}</span> : null}
               </Link>
             );
           })}
@@ -122,6 +138,7 @@ function AdminShell() {
                   active ? "gradient-sky text-primary-foreground" : "bg-secondary text-muted-foreground"
                 }`}>
                 <I className="h-3.5 w-3.5" /> {it.label}
+                {it.badge ? <span className="ml-1 text-[10px] font-bold px-1.5 rounded-full bg-gold text-gold-foreground">{it.badge}</span> : null}
               </Link>
             );
           })}
