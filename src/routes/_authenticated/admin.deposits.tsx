@@ -26,7 +26,11 @@ function DepositsAdmin() {
     const { data } = await q;
     setRows((data ?? []) as unknown as D[]);
   }
-  useEffect(() => { load(); }, [filter]);
+  useEffect(() => {
+    load();
+    const i = setInterval(load, 2000);
+    return () => clearInterval(i);
+  }, [filter]);
 
   async function approve(id: string) {
     const { error } = await supabase.rpc("approve_deposit", { _deposit_id: id });
