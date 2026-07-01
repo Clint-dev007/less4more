@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_authenticated/admin/withdrawals")({
 type W = {
   id: string; amount: number; status: string; created_at: string; user_id: string;
   bank_name: string; account_no: string; account_name: string; payout_day: string;
-  profiles: { name: string; phone: string | null; ref_code: string } | null;
+  profile?: { name: string; phone: string | null; ref_code: string } | null;
 };
 
 function WdAdmin() {
@@ -22,10 +22,18 @@ function WdAdmin() {
   const [success, setSuccess] = useState<string | null>(null);
 
   async function load() {
-    let q = supabase.from("withdrawals").select("id, amount, status, created_at, user_id, bank_name, account_no, account_name, payout_day, profiles(name, phone, ref_code)").order("created_at", { ascending: false });
+    let q = supabase.from("withdrawals").select("id, amount, status, created_at, user_id, bank_name, account_no, account_name, payout_day").order("created_at", { ascending: false });
     if (filter !== "all") q = q.eq("status", filter as never);
-    const { data } = await q;
-    setRows((data ?? []) as unknown as W[]);
+    const { data, error } = await q;
+    if (error) { console.error("withdrawals load", error); return; }
+    const list = (data ?? []) as W[];
+    const ids = Array.from(new Set(list.map((w) => w.user_id)));
+    if (ids.length) {
+      const { data: profs } = await supabase.from("profiles").select("id, name, phone, ref_code").in("id", ids);
+      const map = new Map((profs ?? []).map((p) => [p.id, p]));
+      list.forEach((w) => { w.profile = map.get(w.user_id) as W["profile"] ?? null; });
+    }
+    setRows(list);
   }
   useEffect(() => {
     load();
@@ -74,8 +82,8 @@ function WdAdmin() {
             {rows.map((w) => (
               <tr key={w.id} className="border-t border-border">
                 <td className="px-3 py-3">
-                  <div className="font-semibold">{w.profiles?.name || "—"}</div>
-                  <div className="text-xs text-muted-foreground">{w.profiles?.phone || w.profiles?.ref_code}</div>
+                  <div className="font-semibold">{w.profile?.name || "—"}</div>
+                  <div className="text-xs text-muted-foreground">{w.profile?.phone || w.profile?.ref_code}</div>
                 </td>
                 <td className="px-3 py-3 font-bold">{ngn(w.amount)}</td>
                 <td className="px-3 py-3 text-xs">{w.bank_name}</td>
