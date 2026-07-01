@@ -32,6 +32,7 @@ function InvestPage() {
   const { profile, reload } = useAuth();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [cat, setCat] = useState("all");
+  const [sub, setSub] = useState<"all" | "chicken" | "pig">("all");
   const [open, setOpen] = useState<Plan | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -41,8 +42,16 @@ function InvestPage() {
   }, []);
 
   const filtered = useMemo(
-    () => plans.filter((p) => cat === "all" || p.category === cat),
-    [plans, cat]
+    () => plans
+      .filter((p) => cat === "all" || p.category === cat)
+      .filter((p) => cat !== "poultry" || sub === "all" || p.subtype === sub)
+      .sort((a, b) => {
+        if (a.category === "poultry" && b.category === "poultry") {
+          return (a.subtype ?? "").localeCompare(b.subtype ?? "");
+        }
+        return 0;
+      }),
+    [plans, cat, sub]
   );
 
   return (
@@ -60,6 +69,19 @@ function InvestPage() {
           </button>
         ))}
       </div>
+
+      {cat === "poultry" && (
+        <div className="flex gap-2 overflow-x-auto -mx-4 px-4 pb-1">
+          {(["all", "chicken", "pig"] as const).map((s) => (
+            <button key={s} onClick={() => setSub(s)}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold capitalize whitespace-nowrap ${
+                sub === s ? "gradient-gold text-gold-foreground glow-gold" : "bg-secondary text-muted-foreground"
+              }`}>
+              {s === "chicken" ? "🐔 Chicken" : s === "pig" ? "🐖 Pig" : "All poultry"}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="space-y-3">
         {filtered.map((p) => (
