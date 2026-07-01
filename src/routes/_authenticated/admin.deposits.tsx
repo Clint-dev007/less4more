@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_authenticated/admin/deposits")({
 });
 
 type D = {
-  id: string; amount: number; ref: string; status: string; created_at: string; user_id: string;
+  id: string; amount: number; ref: string; status: string; created_at: string; user_id: string; receipt_url: string | null;
   profile?: { name: string; phone: string | null; ref_code: string } | null;
 };
 
@@ -19,9 +19,10 @@ function DepositsAdmin() {
   const [rows, setRows] = useState<D[]>([]);
   const [filter, setFilter] = useState("pending");
   const [success, setSuccess] = useState<string | null>(null);
+  const [viewing, setViewing] = useState<string | null>(null);
 
   async function load() {
-    let q = supabase.from("deposits").select("id, amount, ref, status, created_at, user_id").order("created_at", { ascending: false });
+    let q = supabase.from("deposits").select("id, amount, ref, status, created_at, user_id, receipt_url").order("created_at", { ascending: false });
     if (filter !== "all") q = q.eq("status", filter as never);
     const { data, error } = await q;
     if (error) { console.error("deposits load", error); return; }
@@ -71,13 +72,13 @@ function DepositsAdmin() {
         <table className="w-full text-sm">
           <thead className="bg-secondary/50">
             <tr className="text-left">
-              {["User","Amount","Reference","When","Status",""].map((h) => (
+              {["User","Amount","Reference","Receipt","When","Status",""].map((h) => (
                 <th key={h} className="px-3 py-3 text-xs uppercase text-muted-foreground">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {rows.length === 0 && <tr><td colSpan={6} className="px-3 py-8 text-center text-muted-foreground">None</td></tr>}
+            {rows.length === 0 && <tr><td colSpan={7} className="px-3 py-8 text-center text-muted-foreground">None</td></tr>}
             {rows.map((d) => (
               <tr key={d.id} className="border-t border-border">
                 <td className="px-3 py-3">
@@ -86,6 +87,13 @@ function DepositsAdmin() {
                 </td>
                 <td className="px-3 py-3 font-bold">{ngn(d.amount)}</td>
                 <td className="px-3 py-3 font-mono text-xs">{d.ref}</td>
+                <td className="px-3 py-3">
+                  {d.receipt_url ? (
+                    <button onClick={() => setViewing(d.receipt_url)} className="group">
+                      <img src={d.receipt_url} alt="receipt" className="h-12 w-12 rounded-lg object-cover border border-border group-hover:border-primary" />
+                    </button>
+                  ) : <span className="text-xs text-muted-foreground">—</span>}
+                </td>
                 <td className="px-3 py-3 text-xs">{relTime(d.created_at)}</td>
                 <td className="px-3 py-3"><span className={`px-2 py-0.5 rounded-full text-xs capitalize ${
                   d.status === "pending" ? "bg-gold/20 text-gold" :
@@ -106,6 +114,11 @@ function DepositsAdmin() {
         </table>
       </div>
       <SuccessAnimation show={!!success} message={success ?? ""} onDone={() => setSuccess(null)} />
+      {viewing && (
+        <div onClick={() => setViewing(null)} className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm grid place-items-center p-4 cursor-zoom-out">
+          <img src={viewing} alt="Receipt full" className="max-h-[90vh] max-w-full rounded-2xl shadow-2xl" />
+        </div>
+      )}
     </div>
   );
 }
