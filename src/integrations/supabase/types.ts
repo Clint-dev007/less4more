@@ -44,6 +44,7 @@ export type Database = {
           created_at: string
           decided_at: string | null
           id: string
+          receipt_url: string | null
           ref: string
           status: Database["public"]["Enums"]["deposit_status"]
           user_id: string
@@ -53,6 +54,7 @@ export type Database = {
           created_at?: string
           decided_at?: string | null
           id?: string
+          receipt_url?: string | null
           ref: string
           status?: Database["public"]["Enums"]["deposit_status"]
           user_id: string
@@ -62,6 +64,7 @@ export type Database = {
           created_at?: string
           decided_at?: string | null
           id?: string
+          receipt_url?: string | null
           ref?: string
           status?: Database["public"]["Enums"]["deposit_status"]
           user_id?: string
