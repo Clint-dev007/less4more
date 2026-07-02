@@ -17,7 +17,8 @@ function Withdraw() {
   const [bankName, setBankName] = useState(profile?.bank_name ?? "");
   const [accountNo, setAccountNo] = useState(profile?.account_no ?? "");
   const [accountName, setAccountName] = useState(profile?.account_name ?? "");
-  const [amount, setAmount] = useState<number>(0);
+  const [amountStr, setAmountStr] = useState<string>("");
+  const amount = parseFloat(amountStr) || 0;
   const [day, setDay] = useState("Monday");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
@@ -40,7 +41,7 @@ function Withdraw() {
     const { error } = await supabase.rpc("create_withdrawal", { _amount: amount, _payout_day: day });
     setLoading(false);
     if (error) { toast.error(error.message); return; }
-    setAmount(0);
+    setAmountStr("");
     reload();
     setSuccess("Withdrawal submitted");
   }
@@ -65,7 +66,8 @@ function Withdraw() {
         <div className="font-semibold">Request payout</div>
         <label className="block">
           <span className="text-xs text-muted-foreground">Amount (₦)</span>
-          <input type="number" value={amount || ""} onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
+          <input type="text" inputMode="decimal" value={amountStr}
+            onChange={(e) => setAmountStr(e.target.value.replace(/[^\d.]/g, ""))}
             className="mt-1 w-full px-4 py-3 rounded-xl bg-secondary border border-border text-lg font-bold focus:border-primary focus:outline-none" />
         </label>
         <label className="block">
