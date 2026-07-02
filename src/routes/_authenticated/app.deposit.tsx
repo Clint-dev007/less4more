@@ -14,7 +14,8 @@ export const Route = createFileRoute("/_authenticated/app/deposit")({
 function Deposit() {
   const { user } = useAuth();
   const [bank, setBank] = useState<{ bank_name: string; account_no: string; account_name: string } | null>(null);
-  const [amount, setAmount] = useState<number>(5000);
+  const [amountStr, setAmountStr] = useState<string>("5000");
+  const amount = parseFloat(amountStr) || 0;
   const [ref, setRef] = useState("");
   const [receipt, setReceipt] = useState<string>("");
   const [copied, setCopied] = useState(false);
@@ -67,7 +68,8 @@ function Deposit() {
       <div className="card-3d rounded-3xl p-5 space-y-3">
         <label className="block">
           <span className="text-xs text-muted-foreground">Amount you transferred (₦)</span>
-          <input type="number" value={amount} onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
+          <input type="text" inputMode="decimal" value={amountStr}
+            onChange={(e) => setAmountStr(e.target.value.replace(/[^\d.]/g, ""))}
             className="mt-1 w-full px-4 py-3 rounded-xl bg-secondary border border-border text-lg font-bold focus:border-primary focus:outline-none" />
           <div className="text-xs text-muted-foreground mt-1">{ngn(amount)}</div>
         </label>
