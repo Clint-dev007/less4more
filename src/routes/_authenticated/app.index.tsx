@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { ngn, relTime } from "@/lib/format";
-import { ArrowDownCircle, ArrowUpCircle, Gift, Eye, EyeOff } from "lucide-react";
+import { ArrowDownCircle, ArrowUpCircle, Gift, Eye, EyeOff, TrendingUp } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/app/")({
   component: HomePage,
@@ -32,18 +32,24 @@ function HomePage() {
   const { profile, user, reload } = useAuth();
   const [tx, setTx] = useState<Array<{ id: string; kind: string; amount: number; status: string; at: string }>>([]);
   const [hidden, setHidden] = useState(false);
+  const [estimated, setEstimated] = useState(0);
+  const [activeCount, setActiveCount] = useState(0);
   useEffect(() => {
     if (!user) return;
     const load = async () => {
-      const [d, w] = await Promise.all([
+      const [d, w, inv] = await Promise.all([
         supabase.from("deposits").select("id, amount, status, created_at").order("created_at", { ascending: false }).limit(4),
         supabase.from("withdrawals").select("id, amount, status, created_at").order("created_at", { ascending: false }).limit(4),
+        supabase.from("investments").select("amount, expected_return, status").eq("status", "active"),
       ]);
       const items = [
         ...(d.data ?? []).map((x) => ({ id: "d" + x.id, kind: "Deposit", amount: Number(x.amount), status: x.status, at: x.created_at })),
         ...(w.data ?? []).map((x) => ({ id: "w" + x.id, kind: "Withdrawal", amount: Number(x.amount), status: x.status, at: x.created_at })),
       ].sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime()).slice(0, 5);
       setTx(items);
+      const rows = (inv.data ?? []) as Array<{ amount: number; expected_return: number }>;
+      setEstimated(rows.reduce((s, r) => s + Number(r.expected_return) - Number(r.amount), 0));
+      setActiveCount(rows.length);
       reload();
     };
     load();
@@ -82,6 +88,22 @@ function HomePage() {
           <Link to="/app/withdraw" className="bg-white/20 hover:bg-white/25 backdrop-blur rounded-2xl py-2.5 text-sm font-semibold flex items-center justify-center gap-1.5">
             <ArrowUpCircle className="h-4 w-4" /> Withdraw
           </Link>
+        </div>
+      </motion.div>
+
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+        className="card-3d rounded-3xl p-4 flex items-center gap-3 relative overflow-hidden">
+        <div className="h-12 w-12 rounded-2xl gradient-gold grid place-items-center glow-gold shrink-0">
+          <TrendingUp className="h-5 w-5 text-gold-foreground" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Estimated return</div>
+          <div className="text-2xl font-bold text-gold leading-tight">
+            {hidden ? "₦ ••••••" : `+${ngn(estimated)}`}
+          </div>
+          <div className="text-[11px] text-muted-foreground">
+            From {activeCount} active {activeCount === 1 ? "investment" : "investments"} at maturity
+          </div>
         </div>
       </motion.div>
 
