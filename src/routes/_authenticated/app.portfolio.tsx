@@ -64,6 +64,7 @@ function PortfolioPage() {
                   <span>{Math.round(pct)}% complete</span>
                   <span className="capitalize">{i.status}</span>
                 </div>
+                <Countdown endAt={i.end_at} />
               </div>
             );
           })}
@@ -100,4 +101,41 @@ function StatusPill({ s }: { s: string }) {
 
 function Empty({ text }: { text: string }) {
   return <div className="text-sm text-muted-foreground text-center py-6 card-3d rounded-2xl">{text}</div>;
+}
+
+function Countdown({ endAt }: { endAt: string }) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const diff = new Date(endAt).getTime() - now;
+  if (diff <= 0) {
+    return (
+      <div className="mt-3 rounded-xl bg-success/15 border border-success/30 px-3 py-2 text-center text-[11px] font-bold text-success uppercase tracking-wider">
+        Matured
+      </div>
+    );
+  }
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  const Cell = ({ v, l }: { v: number; l: string }) => (
+    <div className="flex-1 rounded-lg bg-background/60 border border-border py-1.5">
+      <div className="text-base font-bold leading-none tabular-nums text-primary">{String(v).padStart(2, "0")}</div>
+      <div className="text-[9px] text-muted-foreground uppercase mt-0.5">{l}</div>
+    </div>
+  );
+  return (
+    <div className="mt-3">
+      <div className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Time to maturity</div>
+      <div className="flex gap-1.5 text-center">
+        <Cell v={d} l="Days" />
+        <Cell v={h} l="Hrs" />
+        <Cell v={m} l="Min" />
+        <Cell v={s} l="Sec" />
+      </div>
+    </div>
+  );
 }
