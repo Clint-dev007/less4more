@@ -22,7 +22,7 @@ function Deposit() {
   const [receipt, setReceipt] = useState<string>("");
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
   const [tab, setTab] = useState<"instant" | "manual">("instant");
   const [profileName, setProfileName] = useState<string>("");
   const [profilePhone, setProfilePhone] = useState<string>("");
@@ -53,7 +53,7 @@ function Deposit() {
     if (status === "cancelled") { toast.error("Payment cancelled"); return; }
     (async () => {
       const r = await verifyFlw({ data: { tx_ref, transaction_id } });
-      if (r.ok) setSuccess(true); else toast.error(r.message || "Verification failed");
+      if (r.ok) setSuccess("Wallet credited"); else toast.error(r.message || "Verification failed");
     })();
   }, []);
 
@@ -66,7 +66,7 @@ function Deposit() {
     setLoading(false);
     if (error) { toast.error(error.message); return; }
     setRef(""); setReceipt("");
-    setSuccess(true);
+    setSuccess("Admin notified");
   }
 
   async function payInstant() {
@@ -173,7 +173,7 @@ function Deposit() {
           </div>
         </>
       )}
-      <SuccessAnimation show={success} message="Admin notified" onDone={() => setSuccess(false)} />
+      <SuccessAnimation show={!!success} message={success ?? ""} onDone={() => setSuccess(null)} />
     </div>
   );
 }
