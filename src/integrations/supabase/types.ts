@@ -43,7 +43,10 @@ export type Database = {
           amount: number
           created_at: string
           decided_at: string | null
+          flw_tx_id: string | null
+          flw_tx_ref: string | null
           id: string
+          provider: string
           receipt_url: string | null
           ref: string
           status: Database["public"]["Enums"]["deposit_status"]
@@ -53,7 +56,10 @@ export type Database = {
           amount: number
           created_at?: string
           decided_at?: string | null
+          flw_tx_id?: string | null
+          flw_tx_ref?: string | null
           id?: string
+          provider?: string
           receipt_url?: string | null
           ref: string
           status?: Database["public"]["Enums"]["deposit_status"]
@@ -63,7 +69,10 @@ export type Database = {
           amount?: number
           created_at?: string
           decided_at?: string | null
+          flw_tx_id?: string | null
+          flw_tx_ref?: string | null
           id?: string
+          provider?: string
           receipt_url?: string | null
           ref?: string
           status?: Database["public"]["Enums"]["deposit_status"]
@@ -340,6 +349,10 @@ export type Database = {
       create_withdrawal: {
         Args: { _amount: number; _payout_day: string }
         Returns: string
+      }
+      credit_deposit_by_ref: {
+        Args: { _amount: number; _tx_id: string; _tx_ref: string }
+        Returns: undefined
       }
       has_role: {
         Args: {
