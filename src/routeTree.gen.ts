@@ -16,6 +16,7 @@ import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/ap
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as ApiPublicFlwWebhookRouteImport } from './routes/api/public/flw-webhook'
 import { Route as AuthenticatedAppWithdrawRouteImport } from './routes/_authenticated/app.withdraw'
 import { Route as AuthenticatedAppReferralsRouteImport } from './routes/_authenticated/app.referrals'
 import { Route as AuthenticatedAppPortfolioRouteImport } from './routes/_authenticated/app.portfolio'
@@ -62,6 +63,11 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const ApiPublicFlwWebhookRoute = ApiPublicFlwWebhookRouteImport.update({
+  id: '/api/public/flw-webhook',
+  path: '/api/public/flw-webhook',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAppWithdrawRoute =
   AuthenticatedAppWithdrawRouteImport.update({
@@ -149,6 +155,7 @@ export interface FileRoutesByFullPath {
   '/app/portfolio': typeof AuthenticatedAppPortfolioRoute
   '/app/referrals': typeof AuthenticatedAppReferralsRoute
   '/app/withdraw': typeof AuthenticatedAppWithdrawRoute
+  '/api/public/flw-webhook': typeof ApiPublicFlwWebhookRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/app/': typeof AuthenticatedAppIndexRoute
 }
@@ -167,6 +174,7 @@ export interface FileRoutesByTo {
   '/app/portfolio': typeof AuthenticatedAppPortfolioRoute
   '/app/referrals': typeof AuthenticatedAppReferralsRoute
   '/app/withdraw': typeof AuthenticatedAppWithdrawRoute
+  '/api/public/flw-webhook': typeof ApiPublicFlwWebhookRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/app': typeof AuthenticatedAppIndexRoute
 }
@@ -189,6 +197,7 @@ export interface FileRoutesById {
   '/_authenticated/app/portfolio': typeof AuthenticatedAppPortfolioRoute
   '/_authenticated/app/referrals': typeof AuthenticatedAppReferralsRoute
   '/_authenticated/app/withdraw': typeof AuthenticatedAppWithdrawRoute
+  '/api/public/flw-webhook': typeof ApiPublicFlwWebhookRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
 }
@@ -211,6 +220,7 @@ export interface FileRouteTypes {
     | '/app/portfolio'
     | '/app/referrals'
     | '/app/withdraw'
+    | '/api/public/flw-webhook'
     | '/admin/'
     | '/app/'
   fileRoutesByTo: FileRoutesByTo
@@ -229,6 +239,7 @@ export interface FileRouteTypes {
     | '/app/portfolio'
     | '/app/referrals'
     | '/app/withdraw'
+    | '/api/public/flw-webhook'
     | '/admin'
     | '/app'
   id:
@@ -250,6 +261,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/portfolio'
     | '/_authenticated/app/referrals'
     | '/_authenticated/app/withdraw'
+    | '/api/public/flw-webhook'
     | '/_authenticated/admin/'
     | '/_authenticated/app/'
   fileRoutesById: FileRoutesById
@@ -258,6 +270,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicFlwWebhookRoute: typeof ApiPublicFlwWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -310,6 +323,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/api/public/flw-webhook': {
+      id: '/api/public/flw-webhook'
+      path: '/api/public/flw-webhook'
+      fullPath: '/api/public/flw-webhook'
+      preLoaderRoute: typeof ApiPublicFlwWebhookRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/app/withdraw': {
       id: '/_authenticated/app/withdraw'
@@ -461,6 +481,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicFlwWebhookRoute: ApiPublicFlwWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
