@@ -332,6 +332,7 @@ export type Database = {
       approve_deposit: { Args: { _deposit_id: string }; Returns: undefined }
       approve_withdrawal: { Args: { _id: string }; Returns: undefined }
       claim_first_admin: { Args: never; Returns: undefined }
+      count_qualified_referrals: { Args: { _user_id: string }; Returns: number }
       create_investment: {
         Args: { _amount: number; _plan_id: string }
         Returns: string

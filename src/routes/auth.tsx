@@ -24,6 +24,9 @@ function AuthPage() {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) nav({ to: "/app", replace: true });
     });
+    const params = new URLSearchParams(window.location.search);
+    const r = params.get("ref");
+    if (r) { setRefCode(r.toUpperCase()); setMode("signup"); }
   }, [nav]);
 
   async function submit(e: React.FormEvent) {
