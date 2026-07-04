@@ -27,6 +27,7 @@ import { Route as AuthenticatedAppInvestRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAppDepositRouteImport } from './routes/_authenticated/app.deposit'
 import { Route as AuthenticatedAdminWithdrawalsRouteImport } from './routes/_authenticated/admin.withdrawals'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
+import { Route as AuthenticatedAdminThriftRouteImport } from './routes/_authenticated/admin.thrift'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
 import { Route as AuthenticatedAdminPlansRouteImport } from './routes/_authenticated/admin.plans'
 import { Route as AuthenticatedAdminDepositsRouteImport } from './routes/_authenticated/admin.deposits'
@@ -126,6 +127,12 @@ const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminThriftRoute =
+  AuthenticatedAdminThriftRouteImport.update({
+    id: '/thrift',
+    path: '/thrift',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminSettingsRoute =
   AuthenticatedAdminSettingsRouteImport.update({
     id: '/settings',
@@ -152,6 +159,7 @@ export interface FileRoutesByFullPath {
   '/admin/deposits': typeof AuthenticatedAdminDepositsRoute
   '/admin/plans': typeof AuthenticatedAdminPlansRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/admin/thrift': typeof AuthenticatedAdminThriftRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/admin/withdrawals': typeof AuthenticatedAdminWithdrawalsRoute
   '/app/deposit': typeof AuthenticatedAppDepositRoute
@@ -172,6 +180,7 @@ export interface FileRoutesByTo {
   '/admin/deposits': typeof AuthenticatedAdminDepositsRoute
   '/admin/plans': typeof AuthenticatedAdminPlansRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/admin/thrift': typeof AuthenticatedAdminThriftRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/admin/withdrawals': typeof AuthenticatedAdminWithdrawalsRoute
   '/app/deposit': typeof AuthenticatedAppDepositRoute
@@ -196,6 +205,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/deposits': typeof AuthenticatedAdminDepositsRoute
   '/_authenticated/admin/plans': typeof AuthenticatedAdminPlansRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/_authenticated/admin/thrift': typeof AuthenticatedAdminThriftRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/admin/withdrawals': typeof AuthenticatedAdminWithdrawalsRoute
   '/_authenticated/app/deposit': typeof AuthenticatedAppDepositRoute
@@ -220,6 +230,7 @@ export interface FileRouteTypes {
     | '/admin/deposits'
     | '/admin/plans'
     | '/admin/settings'
+    | '/admin/thrift'
     | '/admin/users'
     | '/admin/withdrawals'
     | '/app/deposit'
@@ -240,6 +251,7 @@ export interface FileRouteTypes {
     | '/admin/deposits'
     | '/admin/plans'
     | '/admin/settings'
+    | '/admin/thrift'
     | '/admin/users'
     | '/admin/withdrawals'
     | '/app/deposit'
@@ -263,6 +275,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/deposits'
     | '/_authenticated/admin/plans'
     | '/_authenticated/admin/settings'
+    | '/_authenticated/admin/thrift'
     | '/_authenticated/admin/users'
     | '/_authenticated/admin/withdrawals'
     | '/_authenticated/app/deposit'
@@ -413,6 +426,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/thrift': {
+      id: '/_authenticated/admin/thrift'
+      path: '/thrift'
+      fullPath: '/admin/thrift'
+      preLoaderRoute: typeof AuthenticatedAdminThriftRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/settings': {
       id: '/_authenticated/admin/settings'
       path: '/settings'
@@ -441,6 +461,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminDepositsRoute: typeof AuthenticatedAdminDepositsRoute
   AuthenticatedAdminPlansRoute: typeof AuthenticatedAdminPlansRoute
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
+  AuthenticatedAdminThriftRoute: typeof AuthenticatedAdminThriftRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminWithdrawalsRoute: typeof AuthenticatedAdminWithdrawalsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
@@ -450,6 +471,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminDepositsRoute: AuthenticatedAdminDepositsRoute,
   AuthenticatedAdminPlansRoute: AuthenticatedAdminPlansRoute,
   AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
+  AuthenticatedAdminThriftRoute: AuthenticatedAdminThriftRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
   AuthenticatedAdminWithdrawalsRoute: AuthenticatedAdminWithdrawalsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,

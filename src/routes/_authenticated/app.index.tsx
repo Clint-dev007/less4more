@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { ngn, relTime } from "@/lib/format";
-import { ArrowDownCircle, ArrowUpCircle, Gift, Eye, EyeOff, TrendingUp } from "lucide-react";
+import { ArrowDownCircle, ArrowUpCircle, Gift, Eye, EyeOff, TrendingUp, PiggyBank } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/app/")({
   component: HomePage,
@@ -34,13 +34,16 @@ function HomePage() {
   const [hidden, setHidden] = useState(false);
   const [estimated, setEstimated] = useState(0);
   const [activeCount, setActiveCount] = useState(0);
+  const [thrift, setThrift] = useState<{ active: number; saved: number; nextPayout: string | null }>({ active: 0, saved: 0, nextPayout: null });
   useEffect(() => {
     if (!user) return;
     const load = async () => {
-      const [d, w, inv] = await Promise.all([
+      const [d, w, inv, tp, tc] = await Promise.all([
         supabase.from("deposits").select("id, amount, status, created_at").order("created_at", { ascending: false }).limit(4),
         supabase.from("withdrawals").select("id, amount, status, created_at").order("created_at", { ascending: false }).limit(4),
         supabase.from("investments").select("amount, expected_return, status").eq("status", "active"),
+        supabase.from("thrift_plans").select("id, daily_amount, cycle_length, start_date, status").eq("status", "active"),
+        supabase.from("thrift_contributions").select("amount, status").in("status", ["paid", "caught_up"]),
       ]);
       const items = [
         ...(d.data ?? []).map((x) => ({ id: "d" + x.id, kind: "Deposit", amount: Number(x.amount), status: x.status, at: x.created_at })),
@@ -50,6 +53,15 @@ function HomePage() {
       const rows = (inv.data ?? []) as Array<{ amount: number; expected_return: number }>;
       setEstimated(rows.reduce((s, r) => s + Number(r.expected_return) - Number(r.amount), 0));
       setActiveCount(rows.length);
+      const plans = (tp.data ?? []) as Array<{ start_date: string; cycle_length: number }>;
+      const saved = ((tc.data ?? []) as Array<{ amount: number }>).reduce((s, r) => s + Number(r.amount), 0);
+      let next: string | null = null;
+      plans.forEach((p) => {
+        const end = new Date(p.start_date + "T00:00:00Z"); end.setUTCDate(end.getUTCDate() + p.cycle_length - 1);
+        const iso = end.toISOString().slice(0, 10);
+        if (!next || iso < next) next = iso;
+      });
+      setThrift({ active: plans.length, saved, nextPayout: next });
       reload();
     };
     load();
@@ -106,6 +118,24 @@ function HomePage() {
           </div>
         </div>
       </motion.div>
+
+      <Link to="/app/thrift" className="block card-3d rounded-3xl p-4 relative overflow-hidden">
+        <div className="flex items-center gap-3">
+          <div className="h-12 w-12 rounded-2xl gradient-gold grid place-items-center glow-gold shrink-0">
+            <PiggyBank className="h-6 w-6 text-gold-foreground" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-bold">My Thrift Plans</div>
+            {thrift.active > 0 ? (
+              <div className="text-[11px] text-muted-foreground">
+                {thrift.active} active · saved {ngn(thrift.saved)}{thrift.nextPayout ? ` · next payout ${thrift.nextPayout}` : ""}
+              </div>
+            ) : (
+              <div className="text-[11px] text-muted-foreground">Save daily, get paid on completion. Start now →</div>
+            )}
+          </div>
+        </div>
+      </Link>
 
       <div className="card-3d rounded-3xl p-5">
         <div className="text-sm font-semibold mb-2">Portfolio</div>
