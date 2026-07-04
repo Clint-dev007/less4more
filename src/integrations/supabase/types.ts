@@ -276,6 +276,136 @@ export type Database = {
         }
         Relationships: []
       }
+      thrift_contributions: {
+        Row: {
+          amount: number
+          contrib_date: string
+          id: string
+          paid_at: string | null
+          plan_id: string
+          status: Database["public"]["Enums"]["thrift_contrib_status"]
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          contrib_date: string
+          id?: string
+          paid_at?: string | null
+          plan_id: string
+          status?: Database["public"]["Enums"]["thrift_contrib_status"]
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          contrib_date?: string
+          id?: string
+          paid_at?: string | null
+          plan_id?: string
+          status?: Database["public"]["Enums"]["thrift_contrib_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "thrift_contributions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "thrift_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      thrift_fee_settings: {
+        Row: {
+          cycle_length: number
+          fee_percent: number
+          updated_at: string
+        }
+        Insert: {
+          cycle_length: number
+          fee_percent?: number
+          updated_at?: string
+        }
+        Update: {
+          cycle_length?: number
+          fee_percent?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      thrift_payouts: {
+        Row: {
+          fee_deducted: number
+          id: string
+          payout_amount: number
+          payout_date: string
+          plan_id: string
+          total_saved: number
+          user_id: string
+        }
+        Insert: {
+          fee_deducted: number
+          id?: string
+          payout_amount: number
+          payout_date?: string
+          plan_id: string
+          total_saved: number
+          user_id: string
+        }
+        Update: {
+          fee_deducted?: number
+          id?: string
+          payout_amount?: number
+          payout_date?: string
+          plan_id?: string
+          total_saved?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "thrift_payouts_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "thrift_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      thrift_plans: {
+        Row: {
+          auto_debit: boolean
+          created_at: string
+          cycle_length: number
+          daily_amount: number
+          fee_percent: number
+          id: string
+          start_date: string
+          status: Database["public"]["Enums"]["thrift_plan_status"]
+          user_id: string
+        }
+        Insert: {
+          auto_debit?: boolean
+          created_at?: string
+          cycle_length: number
+          daily_amount: number
+          fee_percent: number
+          id?: string
+          start_date?: string
+          status?: Database["public"]["Enums"]["thrift_plan_status"]
+          user_id: string
+        }
+        Update: {
+          auto_debit?: boolean
+          created_at?: string
+          cycle_length?: number
+          daily_amount?: number
+          fee_percent?: number
+          id?: string
+          start_date?: string
+          status?: Database["public"]["Enums"]["thrift_plan_status"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -341,9 +471,14 @@ export type Database = {
       approve_deposit: { Args: { _deposit_id: string }; Returns: undefined }
       approve_withdrawal: { Args: { _id: string }; Returns: undefined }
       claim_first_admin: { Args: never; Returns: undefined }
+      complete_thrift_plan: { Args: { _plan_id: string }; Returns: undefined }
       count_qualified_referrals: { Args: { _user_id: string }; Returns: number }
       create_investment: {
         Args: { _amount: number; _plan_id: string }
+        Returns: string
+      }
+      create_thrift_plan: {
+        Args: { _auto: boolean; _cycle: number; _daily: number }
         Returns: string
       }
       create_withdrawal: {
@@ -363,6 +498,11 @@ export type Database = {
       }
       reject_deposit: { Args: { _deposit_id: string }; Returns: undefined }
       reject_withdrawal: { Args: { _id: string }; Returns: undefined }
+      thrift_contribute: {
+        Args: { _date: string; _plan_id: string }
+        Returns: undefined
+      }
+      thrift_mark_missed: { Args: { _plan_id: string }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "user"
@@ -374,6 +514,8 @@ export type Database = {
         | "property"
         | "finance"
         | "poultry"
+      thrift_contrib_status: "paid" | "missed" | "caught_up" | "pending"
+      thrift_plan_status: "active" | "completed" | "cancelled"
       withdrawal_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
@@ -512,6 +654,8 @@ export const Constants = {
         "finance",
         "poultry",
       ],
+      thrift_contrib_status: ["paid", "missed", "caught_up", "pending"],
+      thrift_plan_status: ["active", "completed", "cancelled"],
       withdrawal_status: ["pending", "approved", "rejected"],
     },
   },
