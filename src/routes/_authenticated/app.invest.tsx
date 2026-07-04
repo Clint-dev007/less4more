@@ -20,7 +20,6 @@ type Plan = {
 };
 
 const CATS = [
-  { id: "all", label: "All" },
   { id: "thrift", label: "Thrift" },
   { id: "agriculture", label: "Agro" },
   { id: "property", label: "Property" },
@@ -31,7 +30,7 @@ const CATS = [
 function InvestPage() {
   const { profile, reload } = useAuth();
   const [plans, setPlans] = useState<Plan[]>([]);
-  const [cat, setCat] = useState("all");
+  const [cat, setCat] = useState("thrift");
   const [sub, setSub] = useState<"all" | "chicken" | "pig">("all");
   const [open, setOpen] = useState<Plan | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -43,7 +42,7 @@ function InvestPage() {
 
   const filtered = useMemo(
     () => plans
-      .filter((p) => cat === "all" || p.category === cat)
+      .filter((p) => p.category === cat)
       .filter((p) => cat !== "poultry" || sub === "all" || p.subtype === sub)
       .sort((a, b) => {
         if (a.category === "poultry" && b.category === "poultry") {
