@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_authenticated/admin/thrift")({
 type Plan = {
   id: string; user_id: string; daily_amount: number; cycle_length: number;
   fee_percent: number; start_date: string; status: string;
-  profiles?: { name: string; phone: string | null } | null;
+  name?: string | null;
 };
 type Fee = { cycle_length: number; fee_percent: number };
 type Payout = { payout_amount: number; fee_deducted: number; total_saved: number };
@@ -24,12 +24,19 @@ function AdminThrift() {
 
   async function load() {
     const [{ data: p }, { data: f }, { data: pay }, { data: miss }] = await Promise.all([
-      supabase.from("thrift_plans").select("*, profiles:profiles!thrift_plans_user_id_fkey(name,phone)").order("created_at", { ascending: false }).limit(100),
+      supabase.from("thrift_plans").select("*").order("created_at", { ascending: false }).limit(100),
       supabase.from("thrift_fee_settings").select("*").order("cycle_length"),
       supabase.from("thrift_payouts").select("payout_amount, fee_deducted, total_saved"),
       supabase.from("thrift_contributions").select("user_id, status").eq("status", "missed"),
     ]);
-    setPlans((p ?? []) as unknown as Plan[]);
+    const rawPlans = (p ?? []) as Plan[];
+    const ids = Array.from(new Set(rawPlans.map((x) => x.user_id)));
+    const nameMap: Record<string, string> = {};
+    if (ids.length) {
+      const { data: ps } = await supabase.from("profiles").select("id,name").in("id", ids);
+      (ps ?? []).forEach((r: { id: string; name: string }) => { nameMap[r.id] = r.name; });
+    }
+    setPlans(rawPlans.map((r) => ({ ...r, name: nameMap[r.user_id] ?? null })));
     setFees((f ?? []) as Fee[]);
     setPayouts((pay ?? []) as Payout[]);
     // aggregate missed per user
@@ -93,7 +100,7 @@ function AdminThrift() {
             <tbody>
               {plans.map((p) => (
                 <tr key={p.id} className="border-t border-border">
-                  <td className="py-2">{p.profiles?.name ?? p.user_id.slice(0, 8)}</td>
+                  <td className="py-2">{p.name ?? p.user_id.slice(0, 8)}</td>
                   <td>{ngn(p.daily_amount)}</td>
                   <td>{p.cycle_length}d</td>
                   <td>{p.fee_percent}%</td>
