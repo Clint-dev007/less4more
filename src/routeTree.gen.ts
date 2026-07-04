@@ -18,6 +18,7 @@ import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as ApiPublicFlwWebhookRouteImport } from './routes/api/public/flw-webhook'
 import { Route as AuthenticatedAppWithdrawRouteImport } from './routes/_authenticated/app.withdraw'
+import { Route as AuthenticatedAppThriftRouteImport } from './routes/_authenticated/app.thrift'
 import { Route as AuthenticatedAppReferralsRouteImport } from './routes/_authenticated/app.referrals'
 import { Route as AuthenticatedAppPortfolioRouteImport } from './routes/_authenticated/app.portfolio'
 import { Route as AuthenticatedAppNotificationsRouteImport } from './routes/_authenticated/app.notifications'
@@ -75,6 +76,11 @@ const AuthenticatedAppWithdrawRoute =
     path: '/withdraw',
     getParentRoute: () => AuthenticatedAppRoute,
   } as any)
+const AuthenticatedAppThriftRoute = AuthenticatedAppThriftRouteImport.update({
+  id: '/thrift',
+  path: '/thrift',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
 const AuthenticatedAppReferralsRoute =
   AuthenticatedAppReferralsRouteImport.update({
     id: '/referrals',
@@ -154,6 +160,7 @@ export interface FileRoutesByFullPath {
   '/app/notifications': typeof AuthenticatedAppNotificationsRoute
   '/app/portfolio': typeof AuthenticatedAppPortfolioRoute
   '/app/referrals': typeof AuthenticatedAppReferralsRoute
+  '/app/thrift': typeof AuthenticatedAppThriftRoute
   '/app/withdraw': typeof AuthenticatedAppWithdrawRoute
   '/api/public/flw-webhook': typeof ApiPublicFlwWebhookRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -173,6 +180,7 @@ export interface FileRoutesByTo {
   '/app/notifications': typeof AuthenticatedAppNotificationsRoute
   '/app/portfolio': typeof AuthenticatedAppPortfolioRoute
   '/app/referrals': typeof AuthenticatedAppReferralsRoute
+  '/app/thrift': typeof AuthenticatedAppThriftRoute
   '/app/withdraw': typeof AuthenticatedAppWithdrawRoute
   '/api/public/flw-webhook': typeof ApiPublicFlwWebhookRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -196,6 +204,7 @@ export interface FileRoutesById {
   '/_authenticated/app/notifications': typeof AuthenticatedAppNotificationsRoute
   '/_authenticated/app/portfolio': typeof AuthenticatedAppPortfolioRoute
   '/_authenticated/app/referrals': typeof AuthenticatedAppReferralsRoute
+  '/_authenticated/app/thrift': typeof AuthenticatedAppThriftRoute
   '/_authenticated/app/withdraw': typeof AuthenticatedAppWithdrawRoute
   '/api/public/flw-webhook': typeof ApiPublicFlwWebhookRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -219,6 +228,7 @@ export interface FileRouteTypes {
     | '/app/notifications'
     | '/app/portfolio'
     | '/app/referrals'
+    | '/app/thrift'
     | '/app/withdraw'
     | '/api/public/flw-webhook'
     | '/admin/'
@@ -238,6 +248,7 @@ export interface FileRouteTypes {
     | '/app/notifications'
     | '/app/portfolio'
     | '/app/referrals'
+    | '/app/thrift'
     | '/app/withdraw'
     | '/api/public/flw-webhook'
     | '/admin'
@@ -260,6 +271,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/notifications'
     | '/_authenticated/app/portfolio'
     | '/_authenticated/app/referrals'
+    | '/_authenticated/app/thrift'
     | '/_authenticated/app/withdraw'
     | '/api/public/flw-webhook'
     | '/_authenticated/admin/'
@@ -336,6 +348,13 @@ declare module '@tanstack/react-router' {
       path: '/withdraw'
       fullPath: '/app/withdraw'
       preLoaderRoute: typeof AuthenticatedAppWithdrawRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/thrift': {
+      id: '/_authenticated/app/thrift'
+      path: '/thrift'
+      fullPath: '/app/thrift'
+      preLoaderRoute: typeof AuthenticatedAppThriftRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/app/referrals': {
@@ -446,6 +465,7 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppNotificationsRoute: typeof AuthenticatedAppNotificationsRoute
   AuthenticatedAppPortfolioRoute: typeof AuthenticatedAppPortfolioRoute
   AuthenticatedAppReferralsRoute: typeof AuthenticatedAppReferralsRoute
+  AuthenticatedAppThriftRoute: typeof AuthenticatedAppThriftRoute
   AuthenticatedAppWithdrawRoute: typeof AuthenticatedAppWithdrawRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
 }
@@ -457,6 +477,7 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppNotificationsRoute: AuthenticatedAppNotificationsRoute,
   AuthenticatedAppPortfolioRoute: AuthenticatedAppPortfolioRoute,
   AuthenticatedAppReferralsRoute: AuthenticatedAppReferralsRoute,
+  AuthenticatedAppThriftRoute: AuthenticatedAppThriftRoute,
   AuthenticatedAppWithdrawRoute: AuthenticatedAppWithdrawRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
 }
