@@ -489,6 +489,15 @@ export type Database = {
         Args: { _amount: number; _tx_id: string; _tx_ref: string }
         Returns: undefined
       }
+      get_leaderboard: {
+        Args: { _limit?: number }
+        Returns: {
+          id: string
+          invested: number
+          name: string
+          ref_code: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

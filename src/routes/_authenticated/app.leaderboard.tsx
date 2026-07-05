@@ -15,7 +15,7 @@ function LB() {
   const [refs, setRefs] = useState<{ count: number; bonus: number }>({ count: 0, bonus: 0 });
 
   useEffect(() => {
-    supabase.from("profiles").select("id, name, invested, ref_code").order("invested", { ascending: false }).limit(20)
+    supabase.rpc("get_leaderboard", { _limit: 20 })
       .then(({ data }) => setTop((data ?? []) as never));
     if (user) {
       supabase.from("referrals").select("bonus_paid").eq("referrer_id", user.id)
