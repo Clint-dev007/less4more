@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { ngn, relTime } from "@/lib/format";
 import { ArrowDownCircle, ArrowUpCircle, Gift, Eye, EyeOff, TrendingUp, PiggyBank } from "lucide-react";
+import { InstallBanner, InstallAppCard } from "@/components/install-app";
 
 export const Route = createFileRoute("/_authenticated/app/")({
   component: HomePage,
@@ -76,6 +77,7 @@ function HomePage() {
 
   return (
     <div className="px-4 pt-6 space-y-5">
+      <InstallBanner />
       <div>
         <div className="text-sm text-muted-foreground">Hi 👋</div>
         <div className="text-xl font-bold">{profile?.name || "Welcome"}</div>
@@ -166,6 +168,8 @@ function HomePage() {
           <div className="text-xs opacity-80 mt-1">From ₦5,000 · up to 40% ROI</div>
         </div>
       </Link>
+
+      <InstallAppCard />
 
       <div>
         <div className="text-sm font-semibold mb-2 px-1">Recent activity</div>
