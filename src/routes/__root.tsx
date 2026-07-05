@@ -77,6 +77,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "theme-color", content: "#7c3aed" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "less4more" },
       { title: "Lovable App" },
       { name: "description", content: "GreenGold Invest is a Nigerian investment platform with a mobile app for users and a web dashboard for administrators." },
       { name: "author", content: "Lovable" },
