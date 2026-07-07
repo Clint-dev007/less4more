@@ -6,8 +6,9 @@ import { toast } from "sonner";
 import { ngn } from "@/lib/format";
 import { Copy, Check } from "lucide-react";
 import { SuccessAnimation, fileToCompressedDataUrl } from "@/components/success-animation";
-import { useServerFn } from "@tanstack/react-start";
-import { initFlutterwave, verifyFlutterwave } from "@/lib/flutterwave.functions";
+import { ExternalLink } from "lucide-react";
+
+const FLW_PAY_LINK = "https://flutterwave.com/pay/tds7y7v2kdrd";
 
 export const Route = createFileRoute("/_authenticated/app/deposit")({
   component: Deposit,
@@ -26,8 +27,7 @@ function Deposit() {
   const [tab, setTab] = useState<"instant" | "manual">("instant");
   const [profileName, setProfileName] = useState<string>("");
   const [profilePhone, setProfilePhone] = useState<string>("");
-  const initFlw = useServerFn(initFlutterwave);
-  const verifyFlw = useServerFn(verifyFlutterwave);
+  const [linkOpened, setLinkOpened] = useState(false);
 
   useEffect(() => {
     supabase.from("admin_settings").select("bank_name, account_no, account_name").eq("id", 1).maybeSingle()
@@ -39,23 +39,7 @@ function Deposit() {
     supabase.from("profiles").select("name, phone").eq("id", user.id).maybeSingle()
       .then(({ data }) => { setProfileName(data?.name ?? ""); setProfilePhone(data?.phone ?? ""); });
   }, [user?.id]);
-
-  // Handle Flutterwave redirect (?status=&tx_ref=&transaction_id=)
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const q = new URLSearchParams(window.location.search);
-    const status = q.get("status");
-    const tx_ref = q.get("tx_ref");
-    const transaction_id = q.get("transaction_id") ?? undefined;
-    if (!tx_ref) return;
-    // Clean URL
-    window.history.replaceState({}, "", window.location.pathname);
-    if (status === "cancelled") { toast.error("Payment cancelled"); return; }
-    (async () => {
-      const r = await verifyFlw({ data: { tx_ref, transaction_id } });
-      if (r.ok) setSuccess("Wallet credited"); else toast.error(r.message || "Verification failed");
-    })();
-  }, []);
+  void profileName; void profilePhone;
 
   async function submit() {
     if (!user) return;
@@ -69,23 +53,18 @@ function Deposit() {
     setSuccess("Admin notified");
   }
 
-  async function payInstant() {
+  async function submitInstant() {
     if (!user) return;
-    if (amount < 100) { toast.error("Minimum ₦100"); return; }
+    if (amount < 100 || !ref) { toast.error("Enter amount and Flutterwave transaction reference"); return; }
+    if (!receipt) { toast.error("Upload your payment confirmation screenshot"); return; }
     setLoading(true);
-    try {
-      const r = await initFlw({ data: {
-        amount,
-        email: user.email ?? `${user.id}@less4more.app`,
-        name: profileName || "less4more user",
-        phone: profilePhone,
-        redirect_url: `${window.location.origin}/app/deposit`,
-      }});
-      window.location.href = r.link;
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not start payment");
-      setLoading(false);
-    }
+    const { error } = await supabase.from("deposits").insert({
+      user_id: user.id, amount, ref, receipt_url: receipt, provider: "flutterwave_link",
+    });
+    setLoading(false);
+    if (error) { toast.error(error.message); return; }
+    setRef(""); setReceipt(""); setLinkOpened(false);
+    setSuccess("Payment submitted — we'll credit your wallet after confirming");
   }
 
   async function copy() {
@@ -112,18 +91,50 @@ function Deposit() {
 
       {tab === "instant" ? (
         <div className="card-3d rounded-3xl p-5 space-y-3">
-          <div className="text-xs text-muted-foreground">Pay with card, bank transfer, USSD or Opay via Flutterwave. Wallet credits automatically.</div>
-          <label className="block">
-            <span className="text-xs text-muted-foreground">Amount (₦)</span>
-            <input type="text" inputMode="decimal" value={amountStr}
-              onChange={(e) => setAmountStr(e.target.value.replace(/[^\d.]/g, ""))}
-              className="mt-1 w-full px-4 py-3 rounded-xl bg-secondary border border-border text-lg font-bold focus:border-primary focus:outline-none" />
-            <div className="text-xs text-muted-foreground mt-1">{ngn(amount)}</div>
-          </label>
-          <button onClick={payInstant} disabled={loading}
-            className="w-full py-3.5 rounded-2xl gradient-primary text-primary-foreground font-bold glow-primary disabled:opacity-60">
-            {loading ? "Starting…" : `Pay ${ngn(amount)} now`}
-          </button>
+          <div className="text-xs text-muted-foreground">
+            Tap <b>Pay now</b> to open the secure Flutterwave payment page. Enter the amount you want to deposit there,
+            complete payment, then come back and submit the same amount + transaction reference below so we can credit your wallet.
+          </div>
+          <a
+            href={FLW_PAY_LINK}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setLinkOpened(true)}
+            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl gradient-primary text-primary-foreground font-bold glow-primary"
+          >
+            <ExternalLink className="h-4 w-4" /> Pay now on Flutterwave
+          </a>
+
+          <div className="pt-2 space-y-3">
+            <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">After paying</div>
+            <label className="block">
+              <span className="text-xs text-muted-foreground">Amount you paid (₦)</span>
+              <input type="text" inputMode="decimal" value={amountStr}
+                onChange={(e) => setAmountStr(e.target.value.replace(/[^\d.]/g, ""))}
+                className="mt-1 w-full px-4 py-3 rounded-xl bg-secondary border border-border text-lg font-bold focus:border-primary focus:outline-none" />
+              <div className="text-xs text-muted-foreground mt-1">{ngn(amount)}</div>
+            </label>
+            <label className="block">
+              <span className="text-xs text-muted-foreground">Flutterwave transaction reference</span>
+              <input value={ref} onChange={(e) => setRef(e.target.value)} placeholder="e.g. FLW-MOCK-... or shown after payment"
+                className="mt-1 w-full px-4 py-3 rounded-xl bg-secondary border border-border focus:border-primary focus:outline-none" />
+            </label>
+            <label className="block">
+              <span className="text-xs text-muted-foreground">Payment confirmation screenshot</span>
+              <input type="file" accept="image/*" onChange={async (e) => {
+                const f = e.target.files?.[0]; if (!f) return;
+                try { setReceipt(await fileToCompressedDataUrl(f)); }
+                catch { toast.error("Could not read image"); }
+              }} className="mt-1 w-full text-xs file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-primary file:text-primary-foreground file:font-semibold" />
+              {receipt && (
+                <img src={receipt} alt="Receipt preview" className="mt-2 max-h-48 rounded-xl border border-border object-contain bg-secondary" />
+              )}
+            </label>
+            <button onClick={submitInstant} disabled={loading || !linkOpened}
+              className="w-full py-3.5 rounded-2xl gradient-primary text-primary-foreground font-bold glow-primary disabled:opacity-60">
+              {loading ? "Sending…" : linkOpened ? "Submit for confirmation" : "Open payment link first"}
+            </button>
+          </div>
         </div>
       ) : (
         <>
