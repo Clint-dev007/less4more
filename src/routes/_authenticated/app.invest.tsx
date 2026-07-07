@@ -131,13 +131,11 @@ function InvestPage() {
 function InvestModal({ plan, balance, onClose, onDone }: {
   plan: Plan; balance: number; onClose: () => void; onDone: (planName: string) => void;
 }) {
-  const [amountStr, setAmountStr] = useState<string>(String(plan.min_amount));
-  const amount = parseFloat(amountStr) || 0;
+  const amount = Number(plan.min_amount) || 0;
   const [loading, setLoading] = useState(false);
   const expected = amount * (1 + plan.roi / 100);
 
   async function submit() {
-    if (amount < plan.min_amount) { toast.error("Below minimum"); return; }
     if (amount > balance) { toast.error("Insufficient wallet balance"); return; }
     setLoading(true);
     const { error } = await supabase.rpc("create_investment", { _plan_id: plan.id, _amount: amount });
@@ -166,19 +164,12 @@ function InvestModal({ plan, balance, onClose, onDone }: {
 
         <p className="text-sm text-muted-foreground mt-3">{plan.description}</p>
 
-        <label className="block mt-4">
+        <div className="block mt-4">
           <span className="text-xs text-muted-foreground">Amount</span>
-          <input type="text" inputMode="decimal" value={amountStr}
-            onChange={(e) => setAmountStr(e.target.value.replace(/[^\d.]/g, ""))}
-            className="mt-1 w-full px-4 py-3 rounded-xl bg-secondary border border-border text-lg font-bold focus:border-primary focus:outline-none" />
-        </label>
-        <div className="flex gap-1.5 mt-2">
-          {[plan.min_amount, plan.min_amount * 2, plan.min_amount * 5, plan.min_amount * 10].map((v) => (
-            <button key={v} onClick={() => setAmountStr(String(v))}
-              className="flex-1 py-1.5 rounded-full bg-secondary text-xs font-semibold hover:bg-primary/10">
-              {ngn(v)}
-            </button>
-          ))}
+          <div className="mt-1 w-full px-4 py-3 rounded-xl bg-secondary border border-border text-lg font-bold flex items-center justify-between">
+            <span>{ngn(amount)}</span>
+            <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Fixed by admin</span>
+          </div>
         </div>
 
         <div className="mt-4 rounded-2xl gradient-primary p-4 text-primary-foreground glow-primary">
