@@ -38,16 +38,14 @@ function HomePage() {
   const [thrift, setThrift] = useState<{ active: number; saved: number; nextPayout: string | null }>({ active: 0, saved: 0, nextPayout: null });
   useEffect(() => {
     if (!user) return;
+    supabase.rpc("complete_matured_investments");
     const load = async () => {
-      // Process any matured investments first
-      await supabase.rpc("complete_matured_investments");
-
       const [d, w, inv, tp, tc] = await Promise.all([
-        supabase.from("deposits").select("id, amount, status, created_at").order("created_at", { ascending: false }).limit(4),
-        supabase.from("withdrawals").select("id, amount, status, created_at").order("created_at", { ascending: false }).limit(4),
-        supabase.from("investments").select("amount, expected_return, status").eq("status", "active"),
-        supabase.from("thrift_plans").select("id, daily_amount, cycle_length, start_date, status").eq("status", "active"),
-        supabase.from("thrift_contributions").select("amount, status").in("status", ["paid", "caught_up"]),
+        supabase.from("deposits").select("id, amount, status, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(4),
+        supabase.from("withdrawals").select("id, amount, status, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(4),
+        supabase.from("investments").select("amount, expected_return, status").eq("user_id", user.id).eq("status", "active"),
+        supabase.from("thrift_plans").select("id, daily_amount, cycle_length, start_date, status").eq("user_id", user.id).eq("status", "active"),
+        supabase.from("thrift_contributions").select("amount, status").eq("user_id", user.id).in("status", ["paid", "caught_up"]),
       ]);
       const items = [
         ...(d.data ?? []).map((x) => ({ id: "d" + x.id, kind: "Deposit", amount: Number(x.amount), status: x.status, at: x.created_at })),
@@ -69,7 +67,7 @@ function HomePage() {
       reload();
     };
     load();
-    const i = setInterval(load, 2000);
+    const i = setInterval(load, 10000);
     return () => clearInterval(i);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);

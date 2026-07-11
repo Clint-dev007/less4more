@@ -109,7 +109,6 @@ function ThriftPage() {
       )}
 
       <Link to="/app" className="block text-center text-xs text-muted-foreground mt-4">← Back to home</Link>
-      <div className="hidden">{nav.length}</div>
     </div>
   );
 }

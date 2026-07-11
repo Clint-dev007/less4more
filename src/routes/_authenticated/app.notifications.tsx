@@ -16,7 +16,7 @@ function Notifications() {
   const [list, setList] = useState<N[]>([]);
 
   async function load() {
-    const { data } = await supabase.from("notifications").select("*").order("created_at", { ascending: false }).limit(50);
+    const { data } = await supabase.from("notifications").select("*").eq("user_id", user!.id).order("created_at", { ascending: false }).limit(50);
     setList((data ?? []) as N[]);
   }
   useEffect(() => { if (user) load(); }, [user]);

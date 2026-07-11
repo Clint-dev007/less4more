@@ -22,16 +22,16 @@ function PortfolioPage() {
 
   useEffect(() => {
     if (!user) return;
+    supabase.rpc("complete_matured_investments");
     const load = async () => {
-      // Process any matured investments first
-      await supabase.rpc("complete_matured_investments");
-
       const [invRes, wdRes] = await Promise.all([
         supabase.from("investments")
           .select("id, amount, expected_return, start_at, end_at, status, plans(name, icon, roi)")
+          .eq("user_id", user.id)
           .order("start_at", { ascending: false }),
         supabase.from("withdrawals")
           .select("id, amount, status, created_at, payout_day")
+          .eq("user_id", user.id)
           .order("created_at", { ascending: false }),
       ]);
       setI((invRes.data ?? []) as unknown as Inv[]);

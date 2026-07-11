@@ -14,9 +14,9 @@ const DAYS = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sun
 
 function Withdraw() {
   const { profile, reload } = useAuth();
-  const [bankName, setBankName] = useState(profile?.bank_name ?? "");
-  const [accountNo, setAccountNo] = useState(profile?.account_no ?? "");
-  const [accountName, setAccountName] = useState(profile?.account_name ?? "");
+  const [bankName, setBankName] = useState("");
+  const [accountNo, setAccountNo] = useState("");
+  const [accountName, setAccountName] = useState("");
   const [amountStr, setAmountStr] = useState<string>("");
   const amount = parseFloat(amountStr) || 0;
   const [day, setDay] = useState("Monday");
@@ -25,12 +25,20 @@ function Withdraw() {
   const [qualified, setQualified] = useState<number>(0);
 
   useEffect(() => {
+    if (profile) {
+      setBankName(profile.bank_name ?? "");
+      setAccountNo(profile.account_no ?? "");
+      setAccountName(profile.account_name ?? "");
+    }
+  }, [profile]);
+
+  useEffect(() => {
     if (!profile) return;
     const load = () =>
       supabase.rpc("count_qualified_referrals", { _user_id: profile.id })
         .then(({ data }) => setQualified(Number(data ?? 0)));
     load();
-    const t = setInterval(load, 2000);
+    const t = setInterval(load, 15000);
     return () => clearInterval(t);
   }, [profile?.id]);
 

@@ -21,7 +21,7 @@ export const initFlutterwave = createServerFn({ method: "POST" })
       ref: tx_ref,
       provider: "flutterwave",
       flw_tx_ref: tx_ref,
-      receipt_url: "",
+      receipt_url: null,
     });
     if (dErr) throw new Error(dErr.message);
 

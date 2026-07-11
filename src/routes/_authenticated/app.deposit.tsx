@@ -88,7 +88,10 @@ function Deposit() {
           toast.error("Payment was not completed");
         }
       },
-      onclose: () => { setPaying(false); },
+      onclose: async () => {
+        setPaying(false);
+        await supabase.from("deposits").delete().eq("flw_tx_ref", tx_ref).eq("status", "pending");
+      },
     });
   }
 

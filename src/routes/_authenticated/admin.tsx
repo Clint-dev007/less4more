@@ -47,7 +47,7 @@ function AdminShell() {
   useEffect(() => {
     if (loading || !user || isAdmin) return;
     supabase.from("user_roles").select("id", { count: "exact", head: true }).eq("role", "admin")
-      .then(({ count }) => setClaimable(!count));
+      .then(({ count }) => setClaimable((count ?? 1) === 0));
   }, [user, isAdmin, loading]);
 
   async function claim() {
