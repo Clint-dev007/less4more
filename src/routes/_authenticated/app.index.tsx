@@ -97,10 +97,10 @@ function HomePage() {
           {hidden ? "₦ ••••••" : ngn(balance)}
         </div>
         <div className="mt-4 grid grid-cols-2 gap-2">
-          <Link to="/app/deposit" className="bg-white/20 hover:bg-white/25 backdrop-blur rounded-2xl py-2.5 text-sm font-semibold flex items-center justify-center gap-1.5">
+          <Link to="/app/deposit" preload="intent" className="bg-white/20 hover:bg-white/25 backdrop-blur rounded-2xl py-2.5 text-sm font-semibold flex items-center justify-center gap-1.5">
             <ArrowDownCircle className="h-4 w-4" /> Deposit
           </Link>
-          <Link to="/app/withdraw" className="bg-white/20 hover:bg-white/25 backdrop-blur rounded-2xl py-2.5 text-sm font-semibold flex items-center justify-center gap-1.5">
+          <Link to="/app/withdraw" preload="intent" className="bg-white/20 hover:bg-white/25 backdrop-blur rounded-2xl py-2.5 text-sm font-semibold flex items-center justify-center gap-1.5">
             <ArrowUpCircle className="h-4 w-4" /> Withdraw
           </Link>
         </div>
@@ -122,7 +122,7 @@ function HomePage() {
         </div>
       </motion.div>
 
-      <Link to="/app/thrift" className="block card-3d rounded-3xl p-4 relative overflow-hidden">
+      <Link to="/app/thrift" preload="intent" className="block card-3d rounded-3xl p-4 relative overflow-hidden">
         <div className="flex items-center gap-3">
           <div className="h-12 w-12 rounded-2xl gradient-gold grid place-items-center glow-gold shrink-0">
             <PiggyBank className="h-6 w-6 text-gold-foreground" />

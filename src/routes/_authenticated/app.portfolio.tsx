@@ -22,7 +22,6 @@ function PortfolioPage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.rpc("complete_matured_investments");
     const load = async () => {
       const [invRes, wdRes] = await Promise.all([
         supabase.from("investments")

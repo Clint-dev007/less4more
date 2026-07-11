@@ -24,7 +24,7 @@ function Refs() {
         .then(({ data }) => setQualified(Number(data ?? 0)));
     };
     load();
-    const t = setInterval(load, 2000);
+    const t = setInterval(load, 15000);
     return () => clearInterval(t);
   }, [user]);
 

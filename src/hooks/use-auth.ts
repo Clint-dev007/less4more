@@ -11,6 +11,7 @@ export type Profile = {
   returns: number;
   ref_code: string;
   referred_by: string | null;
+  referral_prompted: boolean;
   status: string;
   bank_name: string | null;
   account_no: string | null;

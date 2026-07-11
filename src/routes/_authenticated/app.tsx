@@ -3,6 +3,7 @@ import { Home, TrendingUp, Briefcase, Trophy, Bell, LogOut, Shield, ArrowLeft } 
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { ReferralPrompt } from "@/components/referral-prompt";
 
 export const Route = createFileRoute("/_authenticated/app")({
   component: AppShell,
@@ -69,6 +70,7 @@ function AppShell() {
           </button>
         )}
         <Outlet />
+        <ReferralPrompt />
       </div>
 
       {/* bottom nav */}
@@ -79,7 +81,7 @@ function AppShell() {
               const active = t.exact ? path === t.to : path.startsWith(t.to);
               const Icon = t.icon;
               return (
-                <Link key={t.to} to={t.to as never}
+                <Link key={t.to} to={t.to as never} preload="intent"
                   className={`relative flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-2xl transition ${
                     active ? "gradient-primary text-primary-foreground glow-primary" : "text-muted-foreground"
                   }`}>

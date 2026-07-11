@@ -208,6 +208,7 @@ export type Database = {
           name: string
           phone: string | null
           ref_code: string
+          referral_prompted: boolean
           referred_by: string | null
           returns: number
           status: string
@@ -223,6 +224,7 @@ export type Database = {
           name?: string
           phone?: string | null
           ref_code: string
+          referral_prompted?: boolean
           referred_by?: string | null
           returns?: number
           status?: string
@@ -238,6 +240,7 @@ export type Database = {
           name?: string
           phone?: string | null
           ref_code?: string
+          referral_prompted?: boolean
           referred_by?: string | null
           returns?: number
           status?: string
@@ -475,6 +478,7 @@ export type Database = {
         Args: { _user_id: string; _amount: number; _note?: string }
         Returns: undefined
       }
+      apply_referral_code: { Args: { _code: string }; Returns: undefined }
       complete_matured_investments: { Args: never; Returns: number }
       complete_thrift_plan: { Args: { _plan_id: string }; Returns: undefined }
       count_qualified_referrals: { Args: { _user_id: string }; Returns: number }
@@ -512,6 +516,7 @@ export type Database = {
       }
       reject_deposit: { Args: { _deposit_id: string }; Returns: undefined }
       reject_withdrawal: { Args: { _id: string }; Returns: undefined }
+      skip_referral_prompt: { Args: never; Returns: undefined }
       thrift_contribute: {
         Args: { _date: string; _plan_id: string }
         Returns: undefined

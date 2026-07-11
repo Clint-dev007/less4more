@@ -49,7 +49,7 @@ function AdminThrift() {
     }
     setMissed(Object.entries(agg).map(([user_id, count]) => ({ user_id, count, name: names[user_id] ?? null })).sort((a, b) => b.count - a.count));
   }
-  useEffect(() => { load(); const i = setInterval(load, 4000); return () => clearInterval(i); }, []);
+  useEffect(() => { load(); const i = setInterval(load, 5000); return () => clearInterval(i); }, []);
 
   const activeCount = plans.filter((p) => p.status === "active").length;
   const totalCollected = plans.reduce((s, p) => s + Number(p.daily_amount) * p.cycle_length, 0);

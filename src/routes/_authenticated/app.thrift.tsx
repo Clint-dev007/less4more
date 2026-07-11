@@ -46,7 +46,7 @@ function ThriftPage() {
     setFees((f ?? []) as FeeRow[]);
   }
 
-  useEffect(() => { load(); const i = setInterval(load, 3000); return () => clearInterval(i); // eslint-disable-next-line
+  useEffect(() => { load(); const i = setInterval(load, 15000); return () => clearInterval(i); // eslint-disable-next-line
   }, [user]);
 
   const active = plans.filter((p) => p.status === "active");
@@ -203,7 +203,7 @@ function PlanCard({ plan, onChange }: { plan: Plan; onChange: () => void }) {
       .eq("plan_id", plan.id).order("contrib_date", { ascending: true });
     setContribs((data ?? []) as Contribution[]);
   }
-  useEffect(() => { load(); const i = setInterval(load, 3000); return () => clearInterval(i); // eslint-disable-next-line
+  useEffect(() => { load(); const i = setInterval(load, 15000); return () => clearInterval(i); // eslint-disable-next-line
   }, [plan.id]);
 
   const today = todayUTC();

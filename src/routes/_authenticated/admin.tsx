@@ -40,7 +40,7 @@ function AdminShell() {
       setPending({ d: d.count ?? 0, w: w.count ?? 0 });
     };
     load();
-    const i = setInterval(load, 2000);
+    const i = setInterval(load, 5000);
     return () => clearInterval(i);
   }, [isAdmin]);
 
