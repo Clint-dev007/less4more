@@ -16,19 +16,36 @@ type Inv = {
 type W = { id: string; amount: number; status: string; created_at: string; payout_day: string };
 
 function PortfolioPage() {
-  const { user } = useAuth();
+  const { user, reload } = useAuth();
   const [investments, setI] = useState<Inv[]>([]);
   const [wd, setW] = useState<W[]>([]);
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("investments")
-      .select("id, amount, expected_return, start_at, end_at, status, plans(name, icon, roi)")
-      .order("start_at", { ascending: false })
-      .then(({ data }) => setI((data ?? []) as unknown as Inv[]));
-    supabase.from("withdrawals").select("id, amount, status, created_at, payout_day").order("created_at", { ascending: false })
-      .then(({ data }) => setW((data ?? []) as W[]));
+    const load = async () => {
+      // Process any matured investments first
+      await supabase.rpc("complete_matured_investments");
+
+      const [invRes, wdRes] = await Promise.all([
+        supabase.from("investments")
+          .select("id, amount, expected_return, start_at, end_at, status, plans(name, icon, roi)")
+          .order("start_at", { ascending: false }),
+        supabase.from("withdrawals")
+          .select("id, amount, status, created_at, payout_day")
+          .order("created_at", { ascending: false }),
+      ]);
+      setI((invRes.data ?? []) as unknown as Inv[]);
+      setW((wdRes.data ?? []) as W[]);
+      reload();
+    };
+    load();
+    const i = setInterval(load, 10000);
+    return () => clearInterval(i);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  const active = investments.filter((i) => i.status === "active");
+  const completed = investments.filter((i) => i.status === "completed");
 
   return (
     <div className="px-4 pt-6 space-y-5">
@@ -37,8 +54,8 @@ function PortfolioPage() {
       <div>
         <div className="text-sm font-semibold mb-2">Active investments</div>
         <div className="space-y-3">
-          {investments.length === 0 && <Empty text="No investments yet — pick a plan from Invest." />}
-          {investments.map((i) => {
+          {active.length === 0 && <Empty text="No active investments — pick a plan from Invest." />}
+          {active.map((i) => {
             const start = new Date(i.start_at).getTime();
             const end = new Date(i.end_at).getTime();
             const pct = Math.min(100, Math.max(0, ((Date.now() - start) / (end - start)) * 100));
@@ -70,6 +87,34 @@ function PortfolioPage() {
           })}
         </div>
       </div>
+
+      {completed.length > 0 && (
+        <div>
+          <div className="text-sm font-semibold mb-2">Completed investments</div>
+          <div className="space-y-3">
+            {completed.map((i) => (
+              <div key={i.id} className="card-3d rounded-3xl p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="h-11 w-11 rounded-2xl gradient-gold grid place-items-center text-xl glow-gold">{i.plans?.icon ?? "💼"}</div>
+                    <div>
+                      <div className="font-semibold">{i.plans?.name ?? "Plan"}</div>
+                      <div className="text-[11px] text-muted-foreground">Completed {shortDate(i.end_at)}</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bold">{ngn(i.amount)}</div>
+                    <div className="text-[11px] text-success font-semibold">✓ {ngn(i.expected_return)}</div>
+                  </div>
+                </div>
+                <div className="mt-3 rounded-xl bg-success/15 border border-success/30 px-3 py-2 text-center text-[11px] font-bold text-success uppercase tracking-wider">
+                  Completed — {ngn(i.expected_return - i.amount)} profit earned
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div>
         <div className="text-sm font-semibold mb-2">Withdrawal status</div>

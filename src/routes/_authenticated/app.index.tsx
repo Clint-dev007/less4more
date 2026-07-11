@@ -39,6 +39,9 @@ function HomePage() {
   useEffect(() => {
     if (!user) return;
     const load = async () => {
+      // Process any matured investments first
+      await supabase.rpc("complete_matured_investments");
+
       const [d, w, inv, tp, tc] = await Promise.all([
         supabase.from("deposits").select("id, amount, status, created_at").order("created_at", { ascending: false }).limit(4),
         supabase.from("withdrawals").select("id, amount, status, created_at").order("created_at", { ascending: false }).limit(4),
