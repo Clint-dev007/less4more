@@ -60,6 +60,11 @@ function Deposit() {
     const { data } = await supabase.from("profiles").select("name").eq("id", user.id).maybeSingle();
     if (data?.name) profileName = data.name;
 
+    const { error: insertErr } = await supabase.from("deposits").insert({
+      user_id: user.id, amount, ref: tx_ref, provider: "flutterwave", flw_tx_ref: tx_ref,
+    });
+    if (insertErr) { toast.error("Could not start payment"); setPaying(false); return; }
+
     window.FlutterwaveCheckout({
       public_key: flwKey.current,
       tx_ref,
