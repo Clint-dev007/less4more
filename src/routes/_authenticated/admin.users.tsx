@@ -25,6 +25,10 @@ function UsersPage() {
   const [editName, setEditName] = useState("");
   const [saving, setSaving] = useState(false);
   const deleteUserFn = useServerFn(adminDeleteUser);
+  const [topupUser, setTopupUser] = useState<Row | null>(null);
+  const [topupAmount, setTopupAmount] = useState("");
+  const [topupNote, setTopupNote] = useState("");
+  const [topupSaving, setTopupSaving] = useState(false);
 
   async function load() {
     const { data } = await supabase.from("profiles").select("*").order("joined_at", { ascending: false });
@@ -73,6 +77,25 @@ function UsersPage() {
     }
   }
 
+  async function topup() {
+    if (!topupUser) return;
+    const amt = parseFloat(topupAmount);
+    if (!amt || amt <= 0) { toast.error("Enter a valid amount"); return; }
+    setTopupSaving(true);
+    const { error } = await supabase.rpc("admin_topup_user_balance", {
+      _user_id: topupUser.id,
+      _amount: amt,
+      _note: topupNote.trim(),
+    });
+    setTopupSaving(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success(`${ngn(amt)} credited to ${topupUser.name || "user"}`);
+    setTopupUser(null);
+    setTopupAmount("");
+    setTopupNote("");
+    load();
+  }
+
   const filtered = rows.filter((r) =>
     !q || r.name.toLowerCase().includes(q.toLowerCase()) || r.ref_code.includes(q.toUpperCase()) || (r.phone ?? "").includes(q)
   );
@@ -116,6 +139,10 @@ function UsersPage() {
                 </td>
                 <td className="px-3 py-3">
                   <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                    <button onClick={() => { setSelected(u); setEditName(u.name || ""); setTopupUser(u); setTopupAmount(""); setTopupNote(""); }}
+                      className="px-2 py-1 rounded-lg bg-success/20 text-success hover:bg-success/30 text-xs font-semibold whitespace-nowrap">
+                      Top Up
+                    </button>
                     <button onClick={() => toggle(u.id, u.status)}
                       className="px-2 py-1 rounded-lg bg-secondary hover:bg-primary/20 text-xs font-semibold whitespace-nowrap">
                       {u.status === "active" ? "Suspend" : "Activate"}
@@ -174,6 +201,34 @@ function UsersPage() {
                 <Detail label="Bank name" value={selected.bank_name ?? "—"} />
                 <Detail label="Account number" value={selected.account_no ?? "—"} mono />
                 <Detail label="Account name" value={selected.account_name ?? "—"} />
+              </div>
+            </div>
+
+            <div className="space-y-2 pt-2 border-t border-border">
+              <h3 className="text-xs uppercase text-muted-foreground font-semibold">Top Up Balance</h3>
+              <div className="flex gap-2">
+                <input type="number" value={selected === topupUser ? topupAmount : ""} placeholder="Amount"
+                  onChange={(e) => { setTopupUser(selected); setTopupAmount(e.target.value); }}
+                  className="flex-1 px-3 py-2 rounded-xl bg-secondary border border-border focus:border-primary focus:outline-none text-sm" />
+                <input value={selected === topupUser ? topupNote : ""} placeholder="Note (optional)"
+                  onChange={(e) => { setTopupUser(selected); setTopupNote(e.target.value); }}
+                  className="flex-1 px-3 py-2 rounded-xl bg-secondary border border-border focus:border-primary focus:outline-none text-sm" />
+                <button onClick={async () => {
+                  const amt = parseFloat(selected === topupUser ? topupAmount : "");
+                  if (!amt || amt <= 0) { toast.error("Enter a valid amount"); return; }
+                  setTopupSaving(true);
+                  const { error } = await supabase.rpc("admin_topup_user_balance", {
+                    _user_id: selected.id, _amount: amt,
+                    _note: (selected === topupUser ? topupNote : "").trim(),
+                  });
+                  setTopupSaving(false);
+                  if (error) { toast.error(error.message); return; }
+                  toast.success(`${ngn(amt)} credited to ${selected.name || "user"}`);
+                  setTopupUser(null); setTopupAmount(""); setTopupNote(""); load();
+                }} disabled={topupSaving}
+                  className="px-4 py-2 rounded-xl bg-success text-white text-sm font-semibold disabled:opacity-50 whitespace-nowrap">
+                  {topupSaving ? "..." : "Credit"}
+                </button>
               </div>
             </div>
 
