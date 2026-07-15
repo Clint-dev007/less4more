@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { Home, TrendingUp, Bell, LogOut, Shield, ArrowLeft, MessageSquare, User } from "lucide-react";
+import { Home, TrendingUp, Bell, LogOut, Shield, ArrowLeft, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -37,7 +37,6 @@ function AppShell() {
   const tabs: Array<{ to: string; icon: typeof Home; label: string; exact?: boolean; badge?: number }> = [
     { to: "/app", icon: Home, label: "Home", exact: true },
     { to: "/app/invest", icon: TrendingUp, label: "Invest" },
-    { to: "/app/chat", icon: MessageSquare, label: "Chat" },
     { to: "/app/notifications", icon: Bell, label: "Alerts", badge: unread },
     { to: "/app/profile", icon: User, label: "Profile" },
   ];

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { Settings, Bell, Volume2, VolumeX, Smartphone, MessageSquare, TrendingUp, ArrowUpCircle, Users, Vibrate } from "lucide-react";
+import { Settings, Bell, Volume2, VolumeX, Smartphone, TrendingUp, ArrowUpCircle, Users, Vibrate } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/app/notification-settings")({ component: NotificationSettings });
@@ -11,7 +11,6 @@ type NS = {
   sound_enabled: boolean;
   vibration_enabled: boolean;
   promotional: boolean;
-  group_chat: boolean;
   investment: boolean;
   withdrawal: boolean;
   referral: boolean;
@@ -39,7 +38,7 @@ function NotificationSettings() {
   const { user } = useAuth();
   const [s, setS] = useState<NS>({
     sound_enabled: true, vibration_enabled: true, promotional: true,
-    group_chat: true, investment: true, withdrawal: true, referral: true, push_enabled: true,
+    investment: true, withdrawal: true, referral: true, push_enabled: true,
   });
   const [loading, setLoading] = useState(true);
 
@@ -51,7 +50,6 @@ function NotificationSettings() {
           sound_enabled: data.sound_enabled,
           vibration_enabled: data.vibration_enabled,
           promotional: data.promotional,
-          group_chat: data.group_chat,
           investment: data.investment,
           withdrawal: data.withdrawal,
           referral: data.referral,
@@ -92,7 +90,6 @@ function NotificationSettings() {
         <Toggle label="Investment Updates" icon={TrendingUp} value={s.investment} onChange={(v) => update("investment", v)} />
         <Toggle label="Withdrawal Updates" icon={ArrowUpCircle} value={s.withdrawal} onChange={(v) => update("withdrawal", v)} />
         <Toggle label="Referral Updates" icon={Users} value={s.referral} onChange={(v) => update("referral", v)} />
-        <Toggle label="Group Chat Messages" icon={MessageSquare} value={s.group_chat} onChange={(v) => update("group_chat", v)} />
         <Toggle label="Promotions & Bonuses" icon={Bell} value={s.promotional} onChange={(v) => update("promotional", v)} />
       </div>
     </div>

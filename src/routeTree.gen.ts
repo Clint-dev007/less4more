@@ -31,7 +31,6 @@ import { Route as AuthenticatedAdminThriftRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
 import { Route as AuthenticatedAdminPlansRouteImport } from './routes/_authenticated/admin.plans'
 import { Route as AuthenticatedAdminDepositsRouteImport } from './routes/_authenticated/admin.deposits'
-import { Route as AuthenticatedAppChatRouteImport } from './routes/_authenticated/app.chat'
 import { Route as AuthenticatedAppProfileRouteImport } from './routes/_authenticated/app.profile'
 import { Route as AuthenticatedAppNotificationSettingsRouteImport } from './routes/_authenticated/app.notification-settings'
 import { Route as AuthenticatedAdminBroadcastRouteImport } from './routes/_authenticated/admin.broadcast'
@@ -154,11 +153,6 @@ const AuthenticatedAdminDepositsRoute =
     path: '/deposits',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
-const AuthenticatedAppChatRoute = AuthenticatedAppChatRouteImport.update({
-  id: '/chat',
-  path: '/chat',
-  getParentRoute: () => AuthenticatedAppRoute,
-} as any)
 const AuthenticatedAppProfileRoute = AuthenticatedAppProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -196,7 +190,6 @@ export interface FileRoutesByFullPath {
   '/app/referrals': typeof AuthenticatedAppReferralsRoute
   '/app/thrift': typeof AuthenticatedAppThriftRoute
   '/app/withdraw': typeof AuthenticatedAppWithdrawRoute
-  '/app/chat': typeof AuthenticatedAppChatRoute
   '/app/profile': typeof AuthenticatedAppProfileRoute
   '/api/public/flw-webhook': typeof ApiPublicFlwWebhookRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -221,7 +214,6 @@ export interface FileRoutesByTo {
   '/app/referrals': typeof AuthenticatedAppReferralsRoute
   '/app/thrift': typeof AuthenticatedAppThriftRoute
   '/app/withdraw': typeof AuthenticatedAppWithdrawRoute
-  '/app/chat': typeof AuthenticatedAppChatRoute
   '/app/profile': typeof AuthenticatedAppProfileRoute
   '/api/public/flw-webhook': typeof ApiPublicFlwWebhookRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -279,7 +271,6 @@ export interface FileRouteTypes {
     | '/app/referrals'
     | '/app/thrift'
     | '/app/withdraw'
-    | '/app/chat'
     | '/app/profile'
     | '/api/public/flw-webhook'
     | '/admin/'
@@ -304,7 +295,6 @@ export interface FileRouteTypes {
     | '/app/referrals'
     | '/app/thrift'
     | '/app/withdraw'
-    | '/app/chat'
     | '/app/profile'
     | '/api/public/flw-webhook'
     | '/admin'
@@ -332,7 +322,6 @@ export interface FileRouteTypes {
     | '/_authenticated/app/referrals'
     | '/_authenticated/app/thrift'
     | '/_authenticated/app/withdraw'
-    | '/_authenticated/app/chat'
     | '/_authenticated/app/profile'
     | '/api/public/flw-webhook'
     | '/_authenticated/admin/'
@@ -502,13 +491,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminDepositsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/_authenticated/app/chat': {
-      id: '/_authenticated/app/chat'
-      path: '/chat'
-      fullPath: '/app/chat'
-      preLoaderRoute: typeof AuthenticatedAppChatRouteImport
-      parentRoute: typeof AuthenticatedAppRoute
-    }
     '/_authenticated/app/profile': {
       id: '/_authenticated/app/profile'
       path: '/profile'
@@ -568,7 +550,6 @@ interface AuthenticatedAppRouteChildren {
   AuthenticatedAppReferralsRoute: typeof AuthenticatedAppReferralsRoute
   AuthenticatedAppThriftRoute: typeof AuthenticatedAppThriftRoute
   AuthenticatedAppWithdrawRoute: typeof AuthenticatedAppWithdrawRoute
-  AuthenticatedAppChatRoute: typeof AuthenticatedAppChatRoute
   AuthenticatedAppProfileRoute: typeof AuthenticatedAppProfileRoute
   AuthenticatedAppIndexRoute: typeof AuthenticatedAppIndexRoute
 }
@@ -583,7 +564,6 @@ const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppReferralsRoute: AuthenticatedAppReferralsRoute,
   AuthenticatedAppThriftRoute: AuthenticatedAppThriftRoute,
   AuthenticatedAppWithdrawRoute: AuthenticatedAppWithdrawRoute,
-  AuthenticatedAppChatRoute: AuthenticatedAppChatRoute,
   AuthenticatedAppProfileRoute: AuthenticatedAppProfileRoute,
   AuthenticatedAppIndexRoute: AuthenticatedAppIndexRoute,
 }

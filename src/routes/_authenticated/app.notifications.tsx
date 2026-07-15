@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { relTime } from "@/lib/format";
-import { Bell, Check } from "lucide-react";
+import { Bell, Check, Megaphone } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/app/notifications")({
   component: Notifications,
@@ -16,15 +16,28 @@ function Notifications() {
   const [list, setList] = useState<N[]>([]);
 
   async function load() {
-    const { data } = await supabase.from("notifications").select("*").eq("user_id", user!.id).order("created_at", { ascending: false }).limit(50);
+    if (!user) return;
+    const { data } = await supabase.from("notifications").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(50);
     setList((data ?? []) as N[]);
   }
-  useEffect(() => { if (user) load(); }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    load();
+    const ch = supabase
+      .channel("notifications-list")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` }, () => {
+        load();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [user]);
 
   async function markOne(id: string) {
     await supabase.from("notifications").update({ read: true }).eq("id", id);
     setList((l) => l.map((n) => (n.id === id ? { ...n, read: true } : n)));
   }
+
   async function markAll() {
     if (!user) return;
     await supabase.from("notifications").update({ read: true }).eq("user_id", user.id).eq("read", false);
@@ -41,19 +54,19 @@ function Notifications() {
       </div>
 
       <div className="space-y-2">
-        {list.length === 0 && <div className="text-sm text-muted-foreground text-center py-10">No notifications.</div>}
+        {list.length === 0 && <div className="text-sm text-muted-foreground text-center py-10">No notifications yet.</div>}
         {list.map((n) => (
           <button key={n.id} onClick={() => !n.read && markOne(n.id)}
             className={`w-full text-left card-3d rounded-2xl px-4 py-3 flex items-start gap-3 ${!n.read ? "card-neon" : ""}`}>
-            <div className={`h-9 w-9 rounded-full grid place-items-center ${!n.read ? "gradient-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}>
-              {n.read ? <Check className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
+            <div className={`h-9 w-9 rounded-full grid place-items-center shrink-0 ${!n.read ? "gradient-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}>
+              {n.type === "announcement" ? <Megaphone className="h-4 w-4" /> : n.read ? <Check className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-semibold text-sm">{n.title}</div>
               <div className="text-xs text-muted-foreground">{n.body}</div>
               <div className="text-[10px] text-muted-foreground mt-0.5">{relTime(n.created_at)}</div>
             </div>
-            {!n.read && <span className="h-2 w-2 rounded-full bg-primary mt-2" />}
+            {!n.read && <span className="h-2 w-2 rounded-full bg-primary mt-2 shrink-0" />}
           </button>
         ))}
       </div>

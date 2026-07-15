@@ -7,7 +7,7 @@ import { ngn, relTime } from "@/lib/format";
 import { getReferralLevel, getVipLevel, getNextReferralThreshold, getNextVipThreshold, REFERRAL_LEVELS, VIP_LEVELS, type ReferralLevel, type VipLevel } from "@/lib/ranks";
 import { ReferralBadge, VipBadge } from "@/components/badges";
 import { AchievementGrid, useAchievements } from "@/components/achievements";
-import { ArrowDownCircle, ArrowUpCircle, Gift, Eye, EyeOff, TrendingUp, PiggyBank, Users, Crown, Trophy, Bell, MessageSquare, Briefcase } from "lucide-react";
+import { ArrowDownCircle, ArrowUpCircle, Gift, Eye, EyeOff, TrendingUp, PiggyBank, Users, Crown, Trophy, Bell, Briefcase } from "lucide-react";
 import { InstallBanner, InstallAppCard } from "@/components/install-app";
 
 export const Route = createFileRoute("/_authenticated/app/")({ component: HomePage });
@@ -56,7 +56,10 @@ function HomePage() {
   const [thrift, setThrift] = useState({ active: 0, saved: 0, nextPayout: null as string | null });
   const [refCount, setRefCount] = useState(0);
   const [unreadNotif, setUnreadNotif] = useState(0);
-  const [unreadChat, setUnreadChat] = useState(0);
+  const [activeInvestments, setActiveInvestments] = useState<Array<{
+    id: string; amount: number; expected_return: number; start_at: string; end_at: string;
+    plans: { name: string; icon: string; roi: number } | null;
+  }>>([]);
   const [myLevel, setMyLevel] = useState<ReferralLevel>("bronze");
   const [myVip, setMyVip] = useState<VipLevel>("none");
 
@@ -67,7 +70,7 @@ function HomePage() {
       const [d, w, inv, tp, tc, refs] = await Promise.all([
         supabase.from("deposits").select("id, amount, status, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(4),
         supabase.from("withdrawals").select("id, amount, status, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(4),
-        supabase.from("investments").select("amount, expected_return, status").eq("user_id", user.id),
+        supabase.from("investments").select("amount, expected_return, status, id, start_at, end_at, plans(name, icon, roi)").eq("user_id", user.id),
         supabase.from("thrift_plans").select("id, daily_amount, cycle_length, start_date, status").eq("user_id", user.id).eq("status", "active"),
         supabase.from("thrift_contributions").select("amount, status").eq("user_id", user.id).in("status", ["paid", "caught_up"]),
         supabase.from("referrals").select("id, bonus_paid").eq("referrer_id", user.id),
@@ -94,6 +97,9 @@ function HomePage() {
         if (!next || iso < next) next = iso;
       });
       setThrift({ active: plans.length, saved, nextPayout: next });
+
+      const userActiveInv = (inv.data ?? []).filter((r) => r.status === "active");
+      setActiveInvestments(userActiveInv as any);
 
       const qualifiedRefs = (refs.data ?? []).filter((r) => r.bonus_paid > 0).length;
       setRefCount(qualifiedRefs);
@@ -162,6 +168,50 @@ function HomePage() {
         <StatCard icon={Trophy} label="Referral Rank" value={REFERRAL_LEVELS[myLevel].icon + " " + REFERRAL_LEVELS[myLevel].label} gradient="from-purple-500 to-pink-600" sub={myVip !== "none" ? VIP_LEVELS[myVip].label : ""} />
       </div>
 
+      {/* Active Investment Plans */}
+      {activeInvestments.length > 0 && (
+        <div>
+          <div className="text-sm font-semibold mb-2 px-1 flex items-center gap-1.5">
+            <Briefcase className="h-4 w-4 text-primary" /> Active Plans ({activeInvestments.length})
+          </div>
+          <div className="space-y-2">
+            {activeInvestments.map((inv) => {
+              const start = new Date(inv.start_at).getTime();
+              const end = new Date(inv.end_at).getTime();
+              const now = Date.now();
+              const total = end - start;
+              const elapsed = Math.max(0, now - start);
+              const pct = Math.min((elapsed / total) * 100, 100);
+              const daysLeft = Math.max(0, Math.ceil((end - now) / (1000 * 60 * 60 * 24)));
+              return (
+                <div key={inv.id} className="card-3d rounded-2xl px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-xl gradient-primary grid place-items-center text-lg glow-primary shrink-0">
+                      {inv.plans?.icon || "💰"}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold truncate">{inv.plans?.name || "Investment"}</span>
+                        <span className="text-[11px] text-primary font-bold">+{inv.plans?.roi || 0}%</span>
+                      </div>
+                      <div className="flex items-center justify-between mt-1">
+                        <span className="text-[11px] text-muted-foreground">{ngn(inv.amount)} · {daysLeft}d left</span>
+                        <span className="text-[11px] text-success font-semibold">{ngn(inv.expected_return)}</span>
+                      </div>
+                      <div className="mt-1.5 h-1.5 rounded-full bg-secondary overflow-hidden">
+                        <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }}
+                          className="h-full rounded-full bg-gradient-to-r from-primary to-success" />
+                      </div>
+                      <div className="text-[10px] text-muted-foreground mt-0.5 text-right">{Math.round(pct)}% complete</div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Progress to next levels */}
       <div className="card-3d rounded-2xl p-4 space-y-3">
         <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Progress</div>
@@ -179,7 +229,7 @@ function HomePage() {
       {/* Quick Links */}
       <div className="grid grid-cols-4 gap-2">
         {[
-          { to: "/app/chat", icon: MessageSquare, label: "Chat" },
+          { to: "/app/portfolio", icon: Briefcase, label: "Portfolio" },
           { to: "/app/leaderboard", icon: Trophy, label: "Leaderboard" },
           { to: "/app/notifications", icon: Bell, label: "Alerts", badge: unreadNotif },
           { to: "/app/notification-settings", icon: Users, label: "Settings" },

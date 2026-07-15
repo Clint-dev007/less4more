@@ -43,8 +43,13 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
             .eq("user_id", user.id)
             .maybeSingle();
 
-          if (settings?.sound_enabled) playNotificationSound();
-          if (settings?.push_enabled) showLocalNotification(n.title, n.body);
+          if (settings?.sound_enabled) {
+            playNotificationSound();
+          }
+
+          if (settings?.push_enabled) {
+            showLocalNotification(n.title, n.body);
+          }
 
           toast(n.title, { description: n.body });
         }
@@ -57,7 +62,14 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
   async function handleAllow() {
     if (!user) return;
     const granted = await requestNotificationPermission(user.id);
-    if (granted) toast.success("Notifications enabled!");
+    if (granted) {
+      toast.success("Notifications enabled!");
+      await supabase.from("notification_settings").upsert({
+        user_id: user.id,
+        push_enabled: true,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "user_id" });
+    }
     setShowPrompt(false);
   }
 
@@ -75,7 +87,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
           <div className="text-4xl">🔔</div>
           <h2 className="text-lg font-bold">Stay Updated</h2>
           <p className="text-sm text-muted-foreground">
-            Allow Less4More to send you notifications for deposits, investments, referrals, and more?
+            Allow Less4More to send you notifications for deposits, investments, referrals, and admin announcements?
           </p>
           <button
             onClick={handleAllow}
