@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
@@ -7,8 +7,8 @@ import { playNotificationSound } from "@/lib/sounds";
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
-  const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
+  const settingsRef = useRef({ sound: true, push: true });
 
   useEffect(() => {
     if (!user) return;
@@ -18,55 +18,53 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       if (!data) {
         await supabase.from("notification_settings").insert({ user_id: user.id });
         setShowPrompt(true);
-      } else if (data.push_enabled) {
-        initPushNotifications(user.id);
+      } else {
+        settingsRef.current = { sound: data.sound_enabled !== false, push: data.push_enabled !== false };
+        if (data.push_enabled) initPushNotifications(user.id);
       }
-      setSettingsLoaded(true);
     };
     loadSettings();
   }, [user]);
 
+  const handleNewNotification = useCallback(async (payload: any) => {
+    const n = payload.new as { title: string; body: string; type: string };
+
+    playNotificationSound();
+
+    if (settingsRef.current.push) {
+      showLocalNotification(n.title, n.body);
+    }
+
+    toast(n.title, { description: n.body });
+  }, []);
+
   useEffect(() => {
-    if (!user || !settingsLoaded) return;
+    if (!user) return;
 
     const channel = supabase
-      .channel("notifications-realtime")
+      .channel("notifications-realtime-v2")
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
-        async (payload) => {
-          const n = payload.new as { title: string; body: string; type: string };
-
-          const { data: settings } = await supabase
-            .from("notification_settings")
-            .select("*")
-            .eq("user_id", user.id)
-            .maybeSingle();
-
-          if (settings?.sound_enabled) {
-            playNotificationSound();
-          }
-
-          if (settings?.push_enabled) {
-            showLocalNotification(n.title, n.body);
-          }
-
-          toast(n.title, { description: n.body });
-        }
+        handleNewNotification
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log("Notifications channel status:", status);
+      });
 
     return () => { supabase.removeChannel(channel); };
-  }, [user, settingsLoaded]);
+  }, [user, handleNewNotification]);
 
   async function handleAllow() {
     if (!user) return;
     const granted = await requestNotificationPermission(user.id);
     if (granted) {
+      settingsRef.current = { ...settingsRef.current, push: true };
       toast.success("Notifications enabled!");
       await supabase.from("notification_settings").upsert({
         user_id: user.id,
         push_enabled: true,
+        sound_enabled: true,
         updated_at: new Date().toISOString(),
       }, { onConflict: "user_id" });
     }
