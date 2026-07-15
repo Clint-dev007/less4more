@@ -34,13 +34,48 @@ function AdminBroadcast() {
   async function broadcast() {
     if (!title.trim() || !body.trim()) { toast.error("Fill in title and message"); return; }
     setLoading(true);
-    const { error } = await supabase.rpc("broadcast_notification", { _title: title.trim(), _body: body.trim(), _type: "announcement" });
-    if (error) { toast.error(error.message); setLoading(false); return; }
 
-    await supabase.from("announcements").insert({ title: title.trim(), body: body.trim() });
-    toast.success(`Broadcast sent to ${totalUsers} users!`);
-    setTitle("");
-    setBody("");
+    const trimmedTitle = title.trim();
+    const trimmedBody = body.trim();
+
+    try {
+      const { data: allUsers, error: usersErr } = await supabase.from("profiles").select("id");
+      if (usersErr) { toast.error("Failed to fetch users: " + usersErr.message); setLoading(false); return; }
+      if (!allUsers || allUsers.length === 0) { toast.error("No users found"); setLoading(false); return; }
+
+      const notifications = allUsers.map((u) => ({
+        user_id: u.id,
+        title: trimmedTitle,
+        body: trimmedBody,
+        type: "announcement",
+        read: false,
+      }));
+
+      const BATCH_SIZE = 50;
+      for (let i = 0; i < notifications.length; i += BATCH_SIZE) {
+        const batch = notifications.slice(i, i + BATCH_SIZE);
+        const { error } = await supabase.from("notifications").insert(batch);
+        if (error) {
+          console.error("Notification insert error:", error);
+          toast.error("Failed to send notifications: " + error.message);
+          setLoading(false);
+          return;
+        }
+      }
+
+      const { error: annErr } = await supabase.from("announcements").insert({
+        title: trimmedTitle,
+        body: trimmedBody,
+      });
+      if (annErr) console.warn("Announcement save failed (non-critical):", annErr.message);
+
+      toast.success(`Broadcast sent to ${allUsers.length} users!`);
+      setTitle("");
+      setBody("");
+    } catch (e: any) {
+      console.error("Broadcast error:", e);
+      toast.error("Something went wrong: " + (e.message || "unknown"));
+    }
     setLoading(false);
   }
 
@@ -50,7 +85,6 @@ function AdminBroadcast() {
         <Megaphone /> Broadcast
       </h1>
 
-      {/* Stats */}
       <div className="grid grid-cols-2 gap-3">
         <div className="card-neon rounded-2xl p-4">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -66,7 +100,6 @@ function AdminBroadcast() {
         </div>
       </div>
 
-      {/* Broadcast Form */}
       <div className="card-neon rounded-2xl p-5 space-y-4">
         <div className="font-semibold flex items-center gap-2">
           <Send className="h-4 w-4" /> Send Announcement
@@ -100,7 +133,6 @@ function AdminBroadcast() {
         </button>
       </div>
 
-      {/* Past Announcements */}
       <div className="card-3d rounded-2xl p-5">
         <div className="font-semibold mb-3">Recent Announcements</div>
         <div className="space-y-2">
