@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, Link, useRouterState, useNavigate, redirect } from "@tanstack/react-router";
-import { LayoutDashboard, Users, Package, ArrowDownCircle, ArrowUpCircle, Settings, LogOut, ShieldCheck, ArrowLeft, PiggyBank } from "lucide-react";
+import { LayoutDashboard, Users, Package, ArrowDownCircle, ArrowUpCircle, Settings, LogOut, ShieldCheck, ArrowLeft, PiggyBank, Megaphone } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -90,6 +90,7 @@ function AdminShell() {
     { to: "/admin/thrift", icon: PiggyBank, label: "Thrift" },
     { to: "/admin/deposits", icon: ArrowDownCircle, label: "Deposits", badge: pending.d },
     { to: "/admin/withdrawals", icon: ArrowUpCircle, label: "Withdrawals", badge: pending.w },
+    { to: "/admin/broadcast", icon: Megaphone, label: "Broadcast" },
     { to: "/admin/settings", icon: Settings, label: "Settings" },
   ] as Array<{ to: string; icon: typeof LayoutDashboard; label: string; exact?: boolean; badge?: number }>;
 

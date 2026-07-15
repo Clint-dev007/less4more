@@ -1,9 +1,10 @@
 import { createFileRoute, Outlet, Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { Home, TrendingUp, Briefcase, Trophy, Bell, LogOut, Shield, ArrowLeft } from "lucide-react";
+import { Home, TrendingUp, Bell, LogOut, Shield, ArrowLeft, MessageSquare, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { ReferralPrompt } from "@/components/referral-prompt";
+import { NotificationProvider } from "@/components/notification-provider";
 
 export const Route = createFileRoute("/_authenticated/app")({
   component: AppShell,
@@ -36,15 +37,16 @@ function AppShell() {
   const tabs: Array<{ to: string; icon: typeof Home; label: string; exact?: boolean; badge?: number }> = [
     { to: "/app", icon: Home, label: "Home", exact: true },
     { to: "/app/invest", icon: TrendingUp, label: "Invest" },
-    { to: "/app/portfolio", icon: Briefcase, label: "Portfolio" },
-    { to: "/app/leaderboard", icon: Trophy, label: "Top" },
+    { to: "/app/chat", icon: MessageSquare, label: "Chat" },
     { to: "/app/notifications", icon: Bell, label: "Alerts", badge: unread },
+    { to: "/app/profile", icon: User, label: "Profile" },
   ];
 
   const tabPaths = new Set(tabs.map((t) => t.to));
   const showBack = !tabPaths.has(path);
 
   return (
+    <NotificationProvider>
     <div className="min-h-screen bg-background">
       <div className="max-w-md mx-auto pb-24 relative">
         {/* top right actions */}
@@ -113,5 +115,6 @@ function AppShell() {
         </div>
       </nav>
     </div>
+    </NotificationProvider>
   );
 }

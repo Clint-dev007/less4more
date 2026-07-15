@@ -200,12 +200,14 @@ export type Database = {
         Row: {
           account_name: string | null
           account_no: string | null
+          avatar_url: string | null
           balance: number
           bank_name: string | null
           id: string
           invested: number
           joined_at: string
           name: string
+          online_at: string | null
           phone: string | null
           ref_code: string
           referral_prompted: boolean
@@ -216,12 +218,14 @@ export type Database = {
         Insert: {
           account_name?: string | null
           account_no?: string | null
+          avatar_url?: string | null
           balance?: number
           bank_name?: string | null
           id: string
           invested?: number
           joined_at?: string
           name?: string
+          online_at?: string | null
           phone?: string | null
           ref_code: string
           referral_prompted?: boolean
@@ -232,12 +236,14 @@ export type Database = {
         Update: {
           account_name?: string | null
           account_no?: string | null
+          avatar_url?: string | null
           balance?: number
           bank_name?: string | null
           id?: string
           invested?: number
           joined_at?: string
           name?: string
+          online_at?: string | null
           phone?: string | null
           ref_code?: string
           referral_prompted?: boolean
@@ -254,6 +260,180 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notification_settings: {
+        Row: {
+          user_id: string
+          sound_enabled: boolean
+          vibration_enabled: boolean
+          promotional: boolean
+          group_chat: boolean
+          investment: boolean
+          withdrawal: boolean
+          referral: boolean
+          push_enabled: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          sound_enabled?: boolean
+          vibration_enabled?: boolean
+          promotional?: boolean
+          group_chat?: boolean
+          investment?: boolean
+          withdrawal?: boolean
+          referral?: boolean
+          push_enabled?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          user_id?: string
+          sound_enabled?: boolean
+          vibration_enabled?: boolean
+          promotional?: boolean
+          group_chat?: boolean
+          investment?: boolean
+          withdrawal?: boolean
+          referral?: boolean
+          push_enabled?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          id: string
+          user_id: string
+          endpoint: string
+          p256dh: string
+          auth_key: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          endpoint: string
+          p256dh: string
+          auth_key: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          endpoint?: string
+          p256dh?: string
+          auth_key?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      group_chat_messages: {
+        Row: {
+          id: string
+          user_id: string
+          content: string
+          reply_to: string | null
+          is_pinned: boolean
+          is_deleted: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          content: string
+          reply_to?: string | null
+          is_pinned?: boolean
+          is_deleted?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          content?: string
+          reply_to?: string | null
+          is_pinned?: boolean
+          is_deleted?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      group_chat_reactions: {
+        Row: {
+          id: string
+          message_id: string
+          user_id: string
+          emoji: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          message_id: string
+          user_id: string
+          emoji: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          message_id?: string
+          user_id?: string
+          emoji?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      user_achievements: {
+        Row: {
+          id: string
+          user_id: string
+          achievement_key: string
+          awarded_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          achievement_key: string
+          awarded_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          achievement_key?: string
+          awarded_at?: string
+        }
+        Relationships: []
+      }
+      announcements: {
+        Row: {
+          id: string
+          title: string
+          body: string
+          type: string
+          created_by: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          body: string
+          type?: string
+          created_by?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          body?: string
+          type?: string
+          created_by?: string | null
+          created_at?: string
+        }
+        Relationships: []
       }
       referrals: {
         Row: {
@@ -506,6 +686,44 @@ export type Database = {
           name: string
           ref_code: string
         }[]
+      }
+      get_enhanced_leaderboard: {
+        Args: { _limit?: number }
+        Returns: {
+          id: string
+          name: string
+          ref_code: string
+          invested: number
+          avatar_url: string | null
+          referral_count: number
+          referral_level: string
+          vip_level: string
+        }[]
+      }
+      get_referral_level: { Args: { _user_id: string }; Returns: string }
+      get_referral_count: { Args: { _user_id: string }; Returns: number }
+      get_vip_level: { Args: { _user_id: string }; Returns: string }
+      get_total_invested: { Args: { _user_id: string }; Returns: number }
+      send_notification: {
+        Args: { _user_id: string; _title: string; _body: string; _type?: string }
+        Returns: string
+      }
+      broadcast_notification: {
+        Args: { _title: string; _body: string; _type?: string }
+        Returns: undefined
+      }
+      award_achievement: {
+        Args: { _user_id: string; _key: string }
+        Returns: boolean
+      }
+      get_user_achievements: {
+        Args: { _user_id: string }
+        Returns: { achievement_key: string; awarded_at: string }[]
+      }
+      check_award_achievements: { Args: { _user_id: string }; Returns: undefined }
+      get_online_users: {
+        Args: { _seconds?: number }
+        Returns: { user_id: string }[]
       }
       has_role: {
         Args: {
