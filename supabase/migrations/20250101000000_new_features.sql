@@ -332,7 +332,16 @@ CREATE POLICY "Admins can create announcements" ON announcements FOR INSERT WITH
   EXISTS (SELECT 1 FROM user_roles WHERE user_id = auth.uid() AND role = 'admin')
 );
 
--- 21. REALTIME
-ALTER PUBLICATION supabase_realtime ADD TABLE group_chat_messages;
-ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
-ALTER PUBLICATION supabase_realtime ADD TABLE announcements;
+-- 21. REALTIME (safe — skips tables already added)
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND tablename = 'group_chat_messages') THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE group_chat_messages;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND tablename = 'notifications') THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND tablename = 'announcements') THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE announcements;
+  END IF;
+END $$;
