@@ -292,13 +292,29 @@ AS $$
   WHERE online_at > (now() - (_seconds || ' seconds')::interval);
 $$;
 
--- 20. RLS POLICIES
+-- 20. RLS POLICIES (drop first to be idempotent)
 ALTER TABLE notification_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE push_subscriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE group_chat_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE group_chat_reactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_achievements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view own settings" ON notification_settings;
+DROP POLICY IF EXISTS "Users can update own settings" ON notification_settings;
+DROP POLICY IF EXISTS "Users can insert own settings" ON notification_settings;
+DROP POLICY IF EXISTS "Users can manage own subscriptions" ON push_subscriptions;
+DROP POLICY IF EXISTS "Anyone can read messages" ON group_chat_messages;
+DROP POLICY IF EXISTS "Users can send messages" ON group_chat_messages;
+DROP POLICY IF EXISTS "Users can update own messages" ON group_chat_messages;
+DROP POLICY IF EXISTS "Admins can delete any message" ON group_chat_messages;
+DROP POLICY IF EXISTS "Anyone can read reactions" ON group_chat_reactions;
+DROP POLICY IF EXISTS "Users can add reactions" ON group_chat_reactions;
+DROP POLICY IF EXISTS "Users can remove own reactions" ON group_chat_reactions;
+DROP POLICY IF EXISTS "Anyone can view achievements" ON user_achievements;
+DROP POLICY IF EXISTS "System can award achievements" ON user_achievements;
+DROP POLICY IF EXISTS "Anyone can read announcements" ON announcements;
+DROP POLICY IF EXISTS "Admins can create announcements" ON announcements;
 
 -- notification_settings
 CREATE POLICY "Users can view own settings" ON notification_settings FOR SELECT USING (auth.uid() = user_id);

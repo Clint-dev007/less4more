@@ -56,7 +56,6 @@ function GroupChat() {
     const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
 
     const messageIds = data.map((m) => m.id);
-    const userIds = [...new Set(data.map((m) => m.user_id))];
 
     const [allReactions, allInvestments] = await Promise.all([
       supabase.from("group_chat_reactions").select("message_id, emoji, user_id").in("message_id", messageIds),
