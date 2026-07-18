@@ -46,13 +46,14 @@ function ProgressBar({ current, max, label }: { current: number; max: number; la
 }
 
 function HomePage() {
-  const { profile, user } = useAuth();
+  const { profile, user, reload } = useAuth();
   const earned = useAchievements();
   const [tx, setTx] = useState<Array<{ id: string; kind: string; amount: number; status: string; at: string }>>([]);
   const [hidden, setHidden] = useState(false);
   const [estimated, setEstimated] = useState(0);
   const [activeCount, setActiveCount] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
+  const [completedEarned, setCompletedEarned] = useState(0);
   const [thrift, setThrift] = useState({ active: 0, saved: 0, nextPayout: null as string | null });
   const [refCount, setRefCount] = useState(0);
   const [unreadNotif, setUnreadNotif] = useState(0);
@@ -65,8 +66,9 @@ function HomePage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.rpc("complete_matured_investments");
     const load = async () => {
+      await supabase.rpc("complete_matured_investments");
+
       const [d, w, inv, tp, tc, refs] = await Promise.all([
         supabase.from("deposits").select("id, amount, status, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(4),
         supabase.from("withdrawals").select("id, amount, status, created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(4),
@@ -75,6 +77,8 @@ function HomePage() {
         supabase.from("thrift_contributions").select("amount, status").eq("user_id", user.id).in("status", ["paid", "caught_up"]),
         supabase.from("referrals").select("id, bonus_paid").eq("referrer_id", user.id),
       ]);
+
+      await reload();
 
       const items = [
         ...(d.data ?? []).map((x) => ({ id: "d" + x.id, kind: "Deposit", amount: Number(x.amount), status: x.status, at: x.created_at })),
@@ -87,6 +91,7 @@ function HomePage() {
       setEstimated(activeInv.reduce((s, r) => s + Number(r.expected_return) - Number(r.amount), 0));
       setActiveCount(activeInv.length);
       setCompletedCount(completedInv.length);
+      setCompletedEarned(completedInv.reduce((s, r) => s + Number(r.expected_return) - Number(r.amount), 0));
 
       const plans = (tp.data ?? []);
       const saved = ((tc.data ?? []) as Array<{ amount: number }>).reduce((s, r) => s + Number(r.amount), 0);
@@ -163,7 +168,7 @@ function HomePage() {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-3">
         <StatCard icon={TrendingUp} label="Expected Return" value={hidden ? "₦•••" : `+${ngn(estimated)}`} gradient="from-amber-500 to-orange-600" sub={`${activeCount} active`} />
-        <StatCard icon={Briefcase} label="Completed" value={`${completedCount}`} gradient="from-green-500 to-emerald-600" sub={`${ngn(returns)} earned`} />
+        <StatCard icon={Briefcase} label="Completed" value={`${completedCount}`} gradient="from-green-500 to-emerald-600" sub={`${ngn(completedEarned)} earned`} />
         <StatCard icon={Users} label="Referrals" value={`${refCount}`} gradient="from-blue-500 to-indigo-600" sub={`${myLevel} level`} />
         <StatCard icon={Trophy} label="Referral Rank" value={REFERRAL_LEVELS[myLevel].icon + " " + REFERRAL_LEVELS[myLevel].label} gradient="from-purple-500 to-pink-600" sub={myVip !== "none" ? VIP_LEVELS[myVip].label : ""} />
       </div>
