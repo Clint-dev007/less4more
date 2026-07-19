@@ -6,11 +6,13 @@ import { toast } from "sonner";
 import { ngn } from "@/lib/format";
 import { Copy, Check, Loader2, CreditCard } from "lucide-react";
 import { SuccessAnimation } from "@/components/success-animation";
-import { verifyFlutterwave } from "@/lib/flutterwave.functions";
+import { verifyPaystack } from "@/lib/paystack.functions";
 
 declare global {
   interface Window {
-    FlutterwaveCheckout?: (config: Record<string, unknown>) => void;
+    PaystackPop?: {
+      new (config: Record<string, unknown>): { openIframe: () => void };
+    };
   }
 }
 
@@ -18,11 +20,11 @@ export const Route = createFileRoute("/_authenticated/app/deposit")({
   component: Deposit,
 });
 
-function loadFlutterwaveScript(): Promise<void> {
+function loadPaystackScript(): Promise<void> {
   return new Promise((resolve) => {
-    if (window.FlutterwaveCheckout) { resolve(); return; }
+    if (window.PaystackPop) { resolve(); return; }
     const s = document.createElement("script");
-    s.src = "https://checkout.flutterwave.com/v3.js";
+    s.src = "https://js.paystack.co/v2/inline.js";
     s.onload = () => resolve();
     document.head.appendChild(s);
   });
@@ -40,20 +42,20 @@ function Deposit() {
   const [success, setSuccess] = useState<string | null>(null);
   const [tab, setTab] = useState<"instant" | "manual">("instant");
   const [paying, setPaying] = useState(false);
-  const flwKey = useRef(import.meta.env.VITE_FLW_PUBLIC_KEY as string);
+  const pskKey = useRef(import.meta.env.VITE_PAYSTACK_PUBLIC_KEY as string);
 
   useEffect(() => {
     supabase.from("admin_settings").select("bank_name, account_no, account_name").eq("id", 1).maybeSingle()
       .then(({ data }) => setBank(data));
   }, []);
 
-  async function payWithFlutterwave() {
+  async function payWithPaystack() {
     if (!user || amount < 100) { toast.error("Minimum deposit is ₦100"); return; }
     setPaying(true);
-    await loadFlutterwaveScript();
-    if (!window.FlutterwaveCheckout) { toast.error("Payment system unavailable"); setPaying(false); return; }
+    await loadPaystackScript();
+    if (!window.PaystackPop) { toast.error("Payment system unavailable"); setPaying(false); return; }
 
-    const tx_ref = `L4M-${user.id.slice(0, 8)}-${Date.now()}`;
+    const reference = `L4M-${user.id.slice(0, 8)}-${Date.now()}`;
     let profileEmail = user.email || `${user.id.slice(0, 8)}@less4more.app`;
     let profileName = "User";
 
@@ -61,38 +63,34 @@ function Deposit() {
     if (data?.name) profileName = data.name;
 
     const { error: insertErr } = await supabase.from("deposits").insert({
-      user_id: user.id, amount, ref: tx_ref, provider: "flutterwave", flw_tx_ref: tx_ref,
+      user_id: user.id, amount, ref: reference, provider: "paystack", psk_reference: reference,
     });
     if (insertErr) { toast.error("Could not start payment"); setPaying(false); return; }
 
-    window.FlutterwaveCheckout({
-      public_key: flwKey.current,
-      tx_ref,
-      amount,
+    const callbackUrl = `${window.location.origin}/deposit/success`;
+    const handler = new window.PaystackPop({
+      key: pskKey.current,
+      email: profileEmail,
+      amount: amount * 100,
       currency: "NGN",
-      country: "NG",
-      customer: { email: profileEmail, name: profileName },
-      customizations: { title: "less4more", description: `Fund wallet - ${ngn(amount)}` },
-      callback: async (response: { status: string; transaction_id?: number; tx_ref?: string }) => {
+      ref: reference,
+      callback: async (response: { reference: string }) => {
         setPaying(false);
-        if (response.status === "successful") {
-          setLoading(true);
-          const result = await verifyFlutterwave({ data: { tx_ref, transaction_id: String(response.transaction_id ?? "") } });
-          setLoading(false);
-          if (result.ok) {
-            setSuccess(`₦${result.amount?.toLocaleString()} deposited successfully!`);
-          } else {
-            toast.error(result.message || "Verification failed — contact support");
-          }
+        setLoading(true);
+        const result = await verifyPaystack({ data: { reference: response.reference } });
+        setLoading(false);
+        if (result.ok) {
+          setSuccess(`₦${result.amount?.toLocaleString()} deposited successfully!`);
         } else {
-          toast.error("Payment was not completed");
+          toast.error(result.message || "Verification failed — contact support");
         }
       },
-      onclose: async () => {
+      onClose: async () => {
         setPaying(false);
-        await supabase.from("deposits").delete().eq("flw_tx_ref", tx_ref).eq("status", "pending");
+        await supabase.from("deposits").delete().eq("psk_reference", reference).eq("status", "pending");
       },
     });
+    handler.openIframe();
   }
 
   async function submitManual() {
@@ -141,7 +139,7 @@ function Deposit() {
               className="mt-1 w-full px-4 py-3 rounded-xl bg-secondary border border-border text-lg font-bold focus:border-primary focus:outline-none" />
             <div className="text-xs text-muted-foreground mt-1">{ngn(amount)}</div>
           </label>
-          <button onClick={payWithFlutterwave} disabled={loading || paying || amount < 100}
+          <button onClick={payWithPaystack} disabled={loading || paying || amount < 100}
             className="w-full py-3.5 rounded-2xl gradient-primary text-primary-foreground font-bold glow-primary flex items-center justify-center gap-2 disabled:opacity-60">
             {paying ? <><Loader2 className="h-4 w-4 animate-spin" /> Loading payment...</> : loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Verifying...</> : `Fund ${ngn(amount)}`}
           </button>

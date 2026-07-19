@@ -47,6 +47,8 @@ export type Database = {
           flw_tx_ref: string | null
           id: string
           provider: string
+          psk_reference: string | null
+          psk_tx_id: string | null
           receipt_url: string | null
           ref: string
           status: Database["public"]["Enums"]["deposit_status"]
@@ -60,6 +62,8 @@ export type Database = {
           flw_tx_ref?: string | null
           id?: string
           provider?: string
+          psk_reference?: string | null
+          psk_tx_id?: string | null
           receipt_url?: string | null
           ref: string
           status?: Database["public"]["Enums"]["deposit_status"]
@@ -73,6 +77,8 @@ export type Database = {
           flw_tx_ref?: string | null
           id?: string
           provider?: string
+          psk_reference?: string | null
+          psk_tx_id?: string | null
           receipt_url?: string | null
           ref?: string
           status?: Database["public"]["Enums"]["deposit_status"]

@@ -87,8 +87,8 @@ function DepositsAdmin() {
                 </td>
                 <td className="px-3 py-3 font-bold">{ngn(d.amount)}</td>
                 <td className="px-3 py-3 text-xs">
-                  <span className={`px-2 py-0.5 rounded-full ${d.provider === "flutterwave" ? "bg-blue-500/20 text-blue-400" : "bg-secondary text-muted-foreground"}`}>
-                    {d.provider === "flutterwave" ? "Auto" : "Manual"}
+                  <span className={`px-2 py-0.5 rounded-full ${d.provider === "paystack" ? "bg-blue-500/20 text-blue-400" : "bg-secondary text-muted-foreground"}`}>
+                    {d.provider === "paystack" ? "Auto" : "Manual"}
                   </span>
                 </td>
                 <td className="px-3 py-3 font-mono text-xs">{d.ref}</td>
