@@ -16,7 +16,7 @@ import { Route as AuthenticatedAppRouteImport } from './routes/_authenticated/ap
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAppIndexRouteImport } from './routes/_authenticated/app.index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
-import { Route as ApiPublicFlwWebhookRouteImport } from './routes/api/public/flw-webhook'
+import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api/public/paystack-webhook'
 import { Route as AuthenticatedAppWithdrawRouteImport } from './routes/_authenticated/app.withdraw'
 import { Route as AuthenticatedAppThriftRouteImport } from './routes/_authenticated/app.thrift'
 import { Route as AuthenticatedAppReferralsRouteImport } from './routes/_authenticated/app.referrals'
@@ -33,6 +33,7 @@ import { Route as AuthenticatedAdminPlansRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminDepositsRouteImport } from './routes/_authenticated/admin.deposits'
 import { Route as AuthenticatedAppProfileRouteImport } from './routes/_authenticated/app.profile'
 import { Route as AuthenticatedAppNotificationSettingsRouteImport } from './routes/_authenticated/app.notification-settings'
+import { Route as AuthenticatedAppDepositSuccessRouteImport } from './routes/_authenticated/app.deposit-success'
 import { Route as AuthenticatedAdminBroadcastRouteImport } from './routes/_authenticated/admin.broadcast'
 
 const AuthRoute = AuthRouteImport.update({
@@ -69,9 +70,9 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
-const ApiPublicFlwWebhookRoute = ApiPublicFlwWebhookRouteImport.update({
-  id: '/api/public/flw-webhook',
-  path: '/api/public/flw-webhook',
+const ApiPublicPaystackWebhookRoute = ApiPublicPaystackWebhookRouteImport.update({
+  id: '/api/public/paystack-webhook',
+  path: '/api/public/paystack-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAppWithdrawRoute =
@@ -168,6 +169,11 @@ const AuthenticatedAdminBroadcastRoute = AuthenticatedAdminBroadcastRouteImport.
   path: '/broadcast',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAppDepositSuccessRoute = AuthenticatedAppDepositSuccessRouteImport.update({
+  id: '/deposit-success',
+  path: '/deposit-success',
+  getParentRoute: () => AuthenticatedAppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -182,6 +188,7 @@ export interface FileRoutesByFullPath {
   '/admin/withdrawals': typeof AuthenticatedAdminWithdrawalsRoute
   '/admin/broadcast': typeof AuthenticatedAdminBroadcastRoute
   '/app/deposit': typeof AuthenticatedAppDepositRoute
+  '/app/deposit-success': typeof AuthenticatedAppDepositSuccessRoute
   '/app/invest': typeof AuthenticatedAppInvestRoute
   '/app/leaderboard': typeof AuthenticatedAppLeaderboardRoute
   '/app/notifications': typeof AuthenticatedAppNotificationsRoute
@@ -191,7 +198,7 @@ export interface FileRoutesByFullPath {
   '/app/thrift': typeof AuthenticatedAppThriftRoute
   '/app/withdraw': typeof AuthenticatedAppWithdrawRoute
   '/app/profile': typeof AuthenticatedAppProfileRoute
-  '/api/public/flw-webhook': typeof ApiPublicFlwWebhookRoute
+  '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/app/': typeof AuthenticatedAppIndexRoute
 }
@@ -206,6 +213,7 @@ export interface FileRoutesByTo {
   '/admin/withdrawals': typeof AuthenticatedAdminWithdrawalsRoute
   '/admin/broadcast': typeof AuthenticatedAdminBroadcastRoute
   '/app/deposit': typeof AuthenticatedAppDepositRoute
+  '/app/deposit-success': typeof AuthenticatedAppDepositSuccessRoute
   '/app/invest': typeof AuthenticatedAppInvestRoute
   '/app/leaderboard': typeof AuthenticatedAppLeaderboardRoute
   '/app/notifications': typeof AuthenticatedAppNotificationsRoute
@@ -215,7 +223,7 @@ export interface FileRoutesByTo {
   '/app/thrift': typeof AuthenticatedAppThriftRoute
   '/app/withdraw': typeof AuthenticatedAppWithdrawRoute
   '/app/profile': typeof AuthenticatedAppProfileRoute
-  '/api/public/flw-webhook': typeof ApiPublicFlwWebhookRoute
+  '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/app': typeof AuthenticatedAppIndexRoute
 }
@@ -233,7 +241,8 @@ export interface FileRoutesById {
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/admin/withdrawals': typeof AuthenticatedAdminWithdrawalsRoute
   '/_authenticated/admin/broadcast': typeof AuthenticatedAdminBroadcastRoute
-  '/_authenticated/app/deposit': typeof AuthenticatedAppDepositRoute
+    '/_authenticated/app/deposit': typeof AuthenticatedAppDepositRoute
+    '/_authenticated/app/deposit-success': typeof AuthenticatedAppDepositSuccessRoute
   '/_authenticated/app/invest': typeof AuthenticatedAppInvestRoute
   '/_authenticated/app/leaderboard': typeof AuthenticatedAppLeaderboardRoute
   '/_authenticated/app/notifications': typeof AuthenticatedAppNotificationsRoute
@@ -243,8 +252,8 @@ export interface FileRoutesById {
   '/_authenticated/app/thrift': typeof AuthenticatedAppThriftRoute
   '/_authenticated/app/withdraw': typeof AuthenticatedAppWithdrawRoute
   '/_authenticated/app/chat': typeof AuthenticatedAppChatRoute
-  '/_authenticated/app/profile': typeof AuthenticatedAppProfileRoute
-  '/api/public/flw-webhook': typeof ApiPublicFlwWebhookRoute
+    '/_authenticated/app/profile': typeof AuthenticatedAppProfileRoute
+    '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/app/': typeof AuthenticatedAppIndexRoute
 }
@@ -263,6 +272,7 @@ export interface FileRouteTypes {
     | '/admin/withdrawals'
     | '/admin/broadcast'
     | '/app/deposit'
+    | '/app/deposit-success'
     | '/app/invest'
     | '/app/leaderboard'
     | '/app/notifications'
@@ -272,7 +282,7 @@ export interface FileRouteTypes {
     | '/app/thrift'
     | '/app/withdraw'
     | '/app/profile'
-    | '/api/public/flw-webhook'
+    | '/api/public/paystack-webhook'
     | '/admin/'
     | '/app/'
   fileRoutesByTo: FileRoutesByTo
@@ -287,6 +297,7 @@ export interface FileRouteTypes {
     | '/admin/withdrawals'
     | '/admin/broadcast'
     | '/app/deposit'
+    | '/app/deposit-success'
     | '/app/invest'
     | '/app/leaderboard'
     | '/app/notifications'
@@ -296,7 +307,7 @@ export interface FileRouteTypes {
     | '/app/thrift'
     | '/app/withdraw'
     | '/app/profile'
-    | '/api/public/flw-webhook'
+    | '/api/public/paystack-webhook'
     | '/admin'
     | '/app'
   id:
@@ -314,6 +325,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/withdrawals'
     | '/_authenticated/admin/broadcast'
     | '/_authenticated/app/deposit'
+    | '/_authenticated/app/deposit-success'
     | '/_authenticated/app/invest'
     | '/_authenticated/app/leaderboard'
     | '/_authenticated/app/notifications'
@@ -323,7 +335,7 @@ export interface FileRouteTypes {
     | '/_authenticated/app/thrift'
     | '/_authenticated/app/withdraw'
     | '/_authenticated/app/profile'
-    | '/api/public/flw-webhook'
+    | '/api/public/paystack-webhook'
     | '/_authenticated/admin/'
     | '/_authenticated/app/'
   fileRoutesById: FileRoutesById
@@ -332,7 +344,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
-  ApiPublicFlwWebhookRoute: typeof ApiPublicFlwWebhookRoute
+  ApiPublicPaystackWebhookRoute: typeof ApiPublicPaystackWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -386,11 +398,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/api/public/flw-webhook': {
-      id: '/api/public/flw-webhook'
-      path: '/api/public/flw-webhook'
-      fullPath: '/api/public/flw-webhook'
-      preLoaderRoute: typeof ApiPublicFlwWebhookRouteImport
+    '/api/public/paystack-webhook': {
+      id: '/api/public/paystack-webhook'
+      path: '/api/public/paystack-webhook'
+      fullPath: '/api/public/paystack-webhook'
+      preLoaderRoute: typeof ApiPublicPaystackWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/app/withdraw': {
@@ -447,6 +459,13 @@ declare module '@tanstack/react-router' {
       path: '/deposit'
       fullPath: '/app/deposit'
       preLoaderRoute: typeof AuthenticatedAppDepositRouteImport
+      parentRoute: typeof AuthenticatedAppRoute
+    }
+    '/_authenticated/app/deposit-success': {
+      id: '/_authenticated/app/deposit-success'
+      path: '/deposit-success'
+      fullPath: '/app/deposit-success'
+      preLoaderRoute: typeof AuthenticatedAppDepositSuccessRouteImport
       parentRoute: typeof AuthenticatedAppRoute
     }
     '/_authenticated/admin/withdrawals': {
@@ -542,6 +561,7 @@ const AuthenticatedAdminRouteWithChildren =
 
 interface AuthenticatedAppRouteChildren {
   AuthenticatedAppDepositRoute: typeof AuthenticatedAppDepositRoute
+  AuthenticatedAppDepositSuccessRoute: typeof AuthenticatedAppDepositSuccessRoute
   AuthenticatedAppInvestRoute: typeof AuthenticatedAppInvestRoute
   AuthenticatedAppLeaderboardRoute: typeof AuthenticatedAppLeaderboardRoute
   AuthenticatedAppNotificationsRoute: typeof AuthenticatedAppNotificationsRoute
@@ -556,6 +576,7 @@ interface AuthenticatedAppRouteChildren {
 
 const AuthenticatedAppRouteChildren: AuthenticatedAppRouteChildren = {
   AuthenticatedAppDepositRoute: AuthenticatedAppDepositRoute,
+  AuthenticatedAppDepositSuccessRoute: AuthenticatedAppDepositSuccessRoute,
   AuthenticatedAppInvestRoute: AuthenticatedAppInvestRoute,
   AuthenticatedAppLeaderboardRoute: AuthenticatedAppLeaderboardRoute,
   AuthenticatedAppNotificationsRoute: AuthenticatedAppNotificationsRoute,
@@ -588,7 +609,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
-  ApiPublicFlwWebhookRoute: ApiPublicFlwWebhookRoute,
+  ApiPublicPaystackWebhookRoute: ApiPublicPaystackWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -67,7 +67,7 @@ function Deposit() {
     });
     if (insertErr) { toast.error("Could not start payment"); setPaying(false); return; }
 
-    const callbackUrl = `${window.location.origin}/deposit/success`;
+    const callbackUrl = `${window.location.origin}/app/deposit-success`;
     const handler = new window.PaystackPop({
       key: pskKey.current,
       email: profileEmail,
