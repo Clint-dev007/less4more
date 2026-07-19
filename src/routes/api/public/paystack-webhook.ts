@@ -42,10 +42,18 @@ export const Route = createFileRoute("/api/public/paystack-webhook")({
         }
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+        const { data: deposit } = await supabaseAdmin
+          .from("deposits")
+          .select("amount")
+          .eq("psk_reference", reference)
+          .single();
+        const creditAmount = deposit?.amount ?? 0;
+
         const { error } = await supabaseAdmin.rpc("credit_deposit_by_psk_ref", {
           _psk_reference: reference,
           _psk_tx_id: String(tx_id),
-          _amount: Number(vj.data.amount ?? 0) / 100,
+          _amount: creditAmount,
         });
         if (error) return new Response(error.message, { status: 500 });
         return new Response("OK");

@@ -67,11 +67,19 @@ export const verifyPaystack = createServerFn({ method: "POST" })
       return { ok: false as const, message: "Payment not completed" };
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: deposit } = await supabaseAdmin
+      .from("deposits")
+      .select("amount")
+      .eq("psk_reference", json.data.reference!)
+      .single();
+    const creditAmount = deposit?.amount ?? 0;
+
     const { error } = await supabaseAdmin.rpc("credit_deposit_by_psk_ref", {
       _psk_reference: json.data.reference!,
       _psk_tx_id: String(json.data.id ?? ""),
-      _amount: Number(json.data.amount ?? 0) / 100,
+      _amount: creditAmount,
     });
     if (error) return { ok: false as const, message: error.message };
-    return { ok: true as const, amount: Number(json.data.amount ?? 0) / 100 };
+    return { ok: true as const, amount: creditAmount };
   });

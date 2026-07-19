@@ -30,6 +30,8 @@ function loadPaystackScript(): Promise<void> {
   });
 }
 
+const DEPOSIT_FEE = 30;
+
 function Deposit() {
   const { user } = useAuth();
   const [bank, setBank] = useState<{ bank_name: string; account_no: string; account_name: string } | null>(null);
@@ -70,7 +72,7 @@ function Deposit() {
     const handler = window.PaystackPop.setup({
       key: pskKey.current,
       email: profileEmail,
-      amount: amount * 100,
+      amount: (amount + DEPOSIT_FEE) * 100,
       currency: "NGN",
       ref: reference,
       callback: async (response: { reference: string }) => {
@@ -137,10 +139,18 @@ function Deposit() {
               onChange={(e) => setAmountStr(e.target.value.replace(/[^\d.]/g, ""))}
               className="mt-1 w-full px-4 py-3 rounded-xl bg-secondary border border-border text-lg font-bold focus:border-primary focus:outline-none" />
             <div className="text-xs text-muted-foreground mt-1">{ngn(amount)}</div>
+            <div className="flex justify-between text-xs text-muted-foreground mt-1">
+              <span>Processing fee</span>
+              <span>{ngn(DEPOSIT_FEE)}</span>
+            </div>
+            <div className="flex justify-between text-xs font-semibold mt-1">
+              <span>You pay</span>
+              <span>{ngn(amount + DEPOSIT_FEE)}</span>
+            </div>
           </label>
           <button onClick={payWithPaystack} disabled={loading || paying || amount < 100}
             className="w-full py-3.5 rounded-2xl gradient-primary text-primary-foreground font-bold glow-primary flex items-center justify-center gap-2 disabled:opacity-60">
-            {paying ? <><Loader2 className="h-4 w-4 animate-spin" /> Loading payment...</> : loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Verifying...</> : `Fund ${ngn(amount)}`}
+            {paying ? <><Loader2 className="h-4 w-4 animate-spin" /> Loading payment...</> : loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Verifying...</> : `Fund ${ngn(amount + DEPOSIT_FEE)}`}
           </button>
         </div>
       ) : (
