@@ -11,7 +11,7 @@ import { verifyPaystack } from "@/lib/paystack.functions";
 declare global {
   interface Window {
     PaystackPop?: {
-      new (config: Record<string, unknown>): { openIframe: () => void };
+      setup: (config: Record<string, unknown>) => { openIframe: () => void };
     };
   }
 }
@@ -67,8 +67,7 @@ function Deposit() {
     });
     if (insertErr) { toast.error("Could not start payment"); setPaying(false); return; }
 
-    const callbackUrl = `${window.location.origin}/app/deposit-success`;
-    const handler = new window.PaystackPop({
+    const handler = window.PaystackPop.setup({
       key: pskKey.current,
       email: profileEmail,
       amount: amount * 100,
