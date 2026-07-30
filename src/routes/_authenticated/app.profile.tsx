@@ -22,6 +22,7 @@ function Profile() {
   useEffect(() => {
     if (!user) return;
     const load = async () => {
+      await supabase.rpc("check_award_achievements", { _user_id: user.id });
       const [refs, inv] = await Promise.all([
         supabase.from("referrals").select("id, bonus_paid").eq("referrer_id", user.id),
         supabase.from("investments").select("amount").eq("user_id", user.id),

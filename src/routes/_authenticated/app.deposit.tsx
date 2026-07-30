@@ -88,6 +88,7 @@ function Deposit() {
         const result = await verifyPaystack({ data: { reference: response.reference } });
         setLoading(false);
         if (result.ok) {
+          supabase.rpc("check_award_achievements", { _user_id: user.id });
           setSuccess(`₦${result.amount?.toLocaleString()} deposited successfully!`);
         } else {
           toast.error(result.message || "Verification failed — contact support");

@@ -24,6 +24,7 @@ function PortfolioPage() {
     if (!user) return;
     const load = async () => {
       await supabase.rpc("complete_matured_investments");
+      await supabase.rpc("check_award_achievements", { _user_id: user.id });
       const [invRes, wdRes] = await Promise.all([
         supabase.from("investments")
           .select("id, amount, expected_return, start_at, end_at, status, plans(name, icon, roi)")

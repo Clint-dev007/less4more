@@ -719,6 +719,9 @@ GRANT EXECUTE ON FUNCTION public.complete_thrift_plan(UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.thrift_mark_missed(UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.complete_matured_investments() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.reject_expired_pending_paystack_deposits() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.award_achievement(UUID, TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.get_user_achievements(UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.check_award_achievements(UUID) TO authenticated;
 
 -- ============================================================
 -- SEED DATA

@@ -131,9 +131,10 @@ function InvestPage() {
         {open && (
           <InvestModal plan={open} balance={Number(profile?.balance ?? 0)}
             onClose={() => setOpen(null)}
-            onDone={(name) => {
+            onDone={async (name) => {
               reload();
               setActivePlanIds((prev) => new Set(prev).add(open!.id));
+              await supabase.rpc("check_award_achievements", { _user_id: user.id });
               setOpen(null);
               setSuccess(`Invested in ${name}`);
             }} />
