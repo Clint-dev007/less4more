@@ -22,7 +22,7 @@ function DepositsAdmin() {
   const [viewing, setViewing] = useState<string | null>(null);
 
   async function load() {
-    let q = supabase.from("deposits").select("id, amount, ref, status, created_at, user_id, receipt_url, provider").order("created_at", { ascending: false });
+    let q = supabase.from("deposits").select("id, amount, ref, status, created_at, user_id, receipt_url, provider").neq("provider", "paystack").order("created_at", { ascending: false });
     if (filter !== "all") q = q.eq("status", filter as never);
     const { data, error } = await q;
     if (error) { console.error("deposits load", error); return; }

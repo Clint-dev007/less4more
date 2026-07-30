@@ -42,8 +42,10 @@ function Withdraw() {
     return () => clearInterval(t);
   }, [profile?.id]);
 
-  const canWithdraw = qualified >= 2;
-  const remaining = Math.max(0, 2 - qualified);
+  const invested = Number(profile?.invested ?? 0);
+  const required = invested < 5000 ? 2 : invested < 15000 ? 4 : 6;
+  const canWithdraw = qualified >= required;
+  const remaining = Math.max(0, required - qualified);
 
   async function saveBank() {
     if (accountNo.length !== 10) { toast.error("Account must be 10 digits"); return; }
@@ -85,14 +87,14 @@ function Withdraw() {
           </div>
         </div>
         <div className="mt-2 text-xs text-muted-foreground">
-          Invite 2 friends who invest in any plan to unlock withdrawals.
+          Invite {required} friends who invest in any plan this month to unlock withdrawals.
         </div>
         <div className="mt-3 h-2 rounded-full bg-secondary overflow-hidden">
-          <div className="h-full gradient-gold transition-all" style={{ width: `${Math.min(100, (qualified / 2) * 100)}%` }} />
+          <div className="h-full gradient-gold transition-all" style={{ width: `${Math.min(100, (qualified / required) * 100)}%` }} />
         </div>
         <div className="mt-2 flex items-center justify-between text-xs">
-          <span className="text-muted-foreground">Qualified referrals</span>
-          <span className="font-bold">{qualified}/2</span>
+          <span className="text-muted-foreground">Qualified referrals (this month)</span>
+          <span className="font-bold">{qualified}/{required}</span>
         </div>
         {!canWithdraw && (
           <div className="mt-2 text-xs text-gold">Your code: <span className="font-mono font-bold">{profile?.ref_code}</span></div>

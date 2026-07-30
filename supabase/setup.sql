@@ -428,19 +428,20 @@ BEGIN
 END;
 $$;
 
--- ============ count_qualified_referrals ============
+-- ============ count_qualified_referrals (current month only) ============
 CREATE OR REPLACE FUNCTION public.count_qualified_referrals(_user_id uuid)
 RETURNS integer LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
   SELECT COUNT(DISTINCT r.referee_id)::int
   FROM public.referrals r
   WHERE r.referrer_id = _user_id
-    AND EXISTS (SELECT 1 FROM public.investments i WHERE i.user_id = r.referee_id);
+    AND EXISTS (SELECT 1 FROM public.investments i WHERE i.user_id = r.referee_id)
+    AND r.created_at >= date_trunc('month', now());
 $$;
 
 -- ============ create_withdrawal ============
 CREATE OR REPLACE FUNCTION public.create_withdrawal(_amount numeric, _payout_day text)
 RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public' AS $$
-DECLARE p RECORD; new_id UUID; qualified INT;
+DECLARE p RECORD; new_id UUID; qualified INT; required INT;
 BEGIN
   SELECT * INTO p FROM public.profiles WHERE id = auth.uid() FOR UPDATE;
   IF NOT FOUND THEN RAISE EXCEPTION 'profile not found'; END IF;
@@ -449,8 +450,12 @@ BEGIN
   IF p.bank_name IS NULL OR p.account_no IS NULL THEN RAISE EXCEPTION 'add bank account first'; END IF;
 
   SELECT public.count_qualified_referrals(auth.uid()) INTO qualified;
-  IF qualified < 2 THEN
-    RAISE EXCEPTION 'You need at least 2 referrals who have invested before you can withdraw. You currently have % qualified referral(s).', qualified;
+  IF p.invested < 5000 THEN required := 2;
+  ELSIF p.invested < 15000 THEN required := 4;
+  ELSE required := 6;
+  END IF;
+  IF qualified < required THEN
+    RAISE EXCEPTION 'You need at least % referrals who have invested this month to withdraw. You currently have %.', required, qualified;
   END IF;
 
   UPDATE public.profiles SET balance = balance - _amount WHERE id = auth.uid();
