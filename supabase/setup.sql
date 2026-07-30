@@ -471,6 +471,9 @@ BEGIN
   SELECT * INTO pl FROM public.plans WHERE id = _plan_id AND active;
   IF NOT FOUND THEN RAISE EXCEPTION 'plan unavailable'; END IF;
   IF _amount < pl.min_amount THEN RAISE EXCEPTION 'amount below minimum'; END IF;
+  IF EXISTS (SELECT 1 FROM public.investments WHERE user_id = auth.uid() AND plan_id = _plan_id AND status = 'active') THEN
+    RAISE EXCEPTION 'You already have an active investment in this plan. Wait for it to complete before reinvesting.';
+  END IF;
   SELECT * INTO pr FROM public.profiles WHERE id = auth.uid() FOR UPDATE;
   IF pr.balance < _amount THEN RAISE EXCEPTION 'insufficient balance'; END IF;
 
