@@ -28,8 +28,9 @@ const CATS = [
 ];
 
 function InvestPage() {
-  const { profile, reload } = useAuth();
+  const { user, profile, reload } = useAuth();
   const [plans, setPlans] = useState<Plan[]>([]);
+  const [activePlanIds, setActivePlanIds] = useState<Set<string>>(new Set());
   const [cat, setCat] = useState("thrift");
   const [sub, setSub] = useState<"all" | "chicken" | "pig">("all");
   const [open, setOpen] = useState<Plan | null>(null);
@@ -39,6 +40,12 @@ function InvestPage() {
     supabase.from("plans").select("*").eq("active", true).order("min_amount")
       .then(({ data }) => setPlans((data ?? []) as Plan[]));
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("investments").select("plan_id").eq("user_id", user.id).eq("status", "active")
+      .then(({ data }) => setActivePlanIds(new Set((data ?? []).map((i) => i.plan_id))));
+  }, [user]);
 
   const filtered = useMemo(
     () => plans
@@ -83,9 +90,11 @@ function InvestPage() {
       )}
 
       <div className="space-y-3">
-        {filtered.map((p) => (
-          <motion.button key={p.id} onClick={() => setOpen(p)} whileTap={{ scale: 0.98 }}
-            className="w-full text-left card-3d rounded-3xl p-4">
+        {filtered.map((p) => {
+          const alreadyInvested = activePlanIds.has(p.id);
+          return (
+          <motion.button key={p.id} onClick={() => !alreadyInvested && setOpen(p)} whileTap={alreadyInvested ? {} : { scale: 0.98 }}
+            className={`w-full text-left card-3d rounded-3xl p-4 transition ${alreadyInvested ? "opacity-50 cursor-not-allowed" : ""}`}>
             <div className="flex items-start gap-3">
               {p.image_url ? (
                 <img src={p.image_url} alt={p.name} className="h-16 w-16 rounded-2xl object-cover glow-primary" />
@@ -108,18 +117,26 @@ function InvestPage() {
                 <div className="mt-2 flex gap-2 text-[11px]">
                   <span className="px-2 py-0.5 rounded-full bg-secondary">{p.duration_days} days</span>
                   <span className="px-2 py-0.5 rounded-full bg-secondary">min {ngn(p.min_amount)}</span>
+                  {alreadyInvested && (
+                    <span className="px-2 py-0.5 rounded-full bg-gold/15 text-gold font-semibold">Already invested</span>
+                  )}
                 </div>
               </div>
             </div>
           </motion.button>
-        ))}
+        );})}
       </div>
 
       <AnimatePresence>
         {open && (
           <InvestModal plan={open} balance={Number(profile?.balance ?? 0)}
             onClose={() => setOpen(null)}
-            onDone={(name) => { reload(); setOpen(null); setSuccess(`Invested in ${name}`); }} />
+            onDone={(name) => {
+              reload();
+              setActivePlanIds((prev) => new Set(prev).add(open!.id));
+              setOpen(null);
+              setSuccess(`Invested in ${name}`);
+            }} />
         )}
       </AnimatePresence>
 
