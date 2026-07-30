@@ -51,6 +51,13 @@ function Deposit() {
       .then(({ data }) => setBank(data));
   }, []);
 
+  useEffect(() => {
+    const t = setInterval(() => {
+      supabase.rpc("reject_expired_pending_paystack_deposits");
+    }, 10000);
+    return () => clearInterval(t);
+  }, []);
+
   async function payWithPaystack() {
     if (!user || amount < 100) { toast.error("Minimum deposit is ₦100"); return; }
     setPaying(true);

@@ -681,6 +681,24 @@ BEGIN
 END;
 $$;
 
+-- ============ reject_expired_pending_paystack_deposits ============
+CREATE OR REPLACE FUNCTION public.reject_expired_pending_paystack_deposits()
+RETURNS INT LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE v_count INT := 0; r RECORD;
+BEGIN
+  FOR r IN
+    SELECT id, user_id, amount, ref FROM public.deposits
+    WHERE provider = 'paystack' AND status = 'pending'
+      AND created_at < now() - INTERVAL '2 minutes'
+    FOR UPDATE SKIP LOCKED
+  LOOP
+    UPDATE public.deposits SET status = 'rejected', decided_at = now() WHERE id = r.id;
+    v_count := v_count + 1;
+  END LOOP;
+  RETURN v_count;
+END;
+$$;
+
 -- ============================================================
 -- GRANT EXECUTE on all RPCs to authenticated
 -- ============================================================
@@ -700,6 +718,7 @@ GRANT EXECUTE ON FUNCTION public.thrift_contribute(UUID, DATE) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.complete_thrift_plan(UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.thrift_mark_missed(UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.complete_matured_investments() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.reject_expired_pending_paystack_deposits() TO authenticated;
 
 -- ============================================================
 -- SEED DATA
