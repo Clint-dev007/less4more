@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -11,21 +11,41 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const nav = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot" | "reset">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [refCode, setRefCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const recovery = useRef(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) nav({ to: "/app", replace: true });
-    });
     const params = new URLSearchParams(window.location.search);
     const r = params.get("ref");
     if (r) { setRefCode(r.toUpperCase()); setMode("signup"); }
+
+    const hash = window.location.hash || "";
+    const isRecovery = hash.includes("type=recovery");
+    if (isRecovery) recovery.current = true;
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
+      if (event === "PASSWORD_RECOVERY") {
+        recovery.current = true;
+        setMode("reset");
+        return;
+      }
+      if (s?.user && !recovery.current) nav({ to: "/app", replace: true });
+    });
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session && !recovery.current) {
+        nav({ to: "/app", replace: true });
+      }
+    });
+    return () => sub.subscription.unsubscribe();
   }, [nav]);
 
   async function submit(e: React.FormEvent) {
@@ -47,6 +67,22 @@ function AuthPage() {
         } else {
           toast.success("Check your email to confirm your account.");
         }
+      } else if (mode === "forgot") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin + "/auth",
+        });
+        if (error) throw error;
+        toast.success("Reset link sent! Check your email.");
+        setMode("signin");
+      } else if (mode === "reset") {
+        if (newPassword.length < 6) throw new Error("Password must be at least 6 characters.");
+        if (newPassword !== confirmPassword) throw new Error("Passwords do not match.");
+        const { error } = await supabase.auth.updateUser({ password: newPassword });
+        if (error) throw error;
+        toast.success("Password updated! Sign in with your new password.");
+        await supabase.auth.signOut();
+        setMode("signin");
+        setPassword("");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -59,6 +95,14 @@ function AuthPage() {
     }
   }
 
+  const titles: Record<typeof mode, { title: string; sub: string }> = {
+    signin: { title: "Welcome back", sub: "Sign in to your wallet" },
+    signup: { title: "Create account", sub: "Start investing in minutes" },
+    forgot: { title: "Reset password", sub: "Enter your email and we'll send you a reset link" },
+    reset: { title: "Set new password", sub: "Choose a new password for your account" },
+  };
+  const { title, sub } = titles[mode];
+
   return (
     <div className="min-h-screen bg-background grid place-items-center px-4 relative overflow-hidden">
       <div className="absolute -top-32 -right-32 h-96 w-96 rounded-full gradient-primary opacity-30 blur-3xl" />
@@ -69,10 +113,8 @@ function AuthPage() {
           <div className="h-9 w-9 rounded-xl gradient-primary glow-primary grid place-items-center text-primary-foreground text-sm">L4</div>
           less4more
         </Link>
-        <h1 className="text-2xl font-bold mt-4">{mode === "signin" ? "Welcome back" : "Create account"}</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {mode === "signin" ? "Sign in to your wallet" : "Start investing in minutes"}
-        </p>
+        <h1 className="text-2xl font-bold mt-4">{title}</h1>
+        <p className="text-sm text-muted-foreground mt-1">{sub}</p>
 
         <form onSubmit={submit} className="mt-5 space-y-3">
           {mode === "signup" && (
@@ -81,45 +123,68 @@ function AuthPage() {
               <Field label="Phone" value={phone} onChange={setPhone} placeholder="08012345678" />
             </>
           )}
-          <Field label="Email" type="email" value={email} onChange={setEmail} required />
-          <Field label="Password" type="password" value={password} onChange={setPassword} required />
+          {mode !== "reset" && (
+            <Field label="Email" type="email" value={email} onChange={setEmail} required />
+          )}
+          {mode === "signin" && (
+            <Field label="Password" type="password" value={password} onChange={setPassword} required />
+          )}
           {mode === "signup" && (
-            <Field label="Referral code (optional)" value={refCode} onChange={setRefCode} placeholder="L4MXXXXXX" />
+            <>
+              <Field label="Password" type="password" value={password} onChange={setPassword} required />
+              <Field label="Referral code (optional)" value={refCode} onChange={setRefCode} placeholder="L4MXXXXXX" />
+            </>
+          )}
+          {mode === "reset" && (
+            <>
+              <Field label="New password" type="password" value={newPassword} onChange={setNewPassword} required />
+              <Field label="Confirm new password" type="password" value={confirmPassword} onChange={setConfirmPassword} required />
+            </>
+          )}
+          {mode === "signin" && (
+            <button type="button" onClick={() => { setMode("forgot"); }}
+              className="text-xs text-muted-foreground hover:text-primary transition">
+              Forgot password?
+            </button>
           )}
           <button type="submit" disabled={loading}
             className="w-full py-3 rounded-xl gradient-primary text-primary-foreground font-semibold glow-primary mt-2 disabled:opacity-60">
-            {loading ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+            {loading ? "Please wait…" : mode === "signin" ? "Sign in" : mode === "signup" ? "Create account" : mode === "forgot" ? "Send reset link" : "Update password"}
           </button>
         </form>
 
-        <div className="mt-4 flex items-center gap-3">
-          <div className="h-px flex-1 bg-border" />
-          <span className="text-xs text-muted-foreground">or</span>
-          <div className="h-px flex-1 bg-border" />
-        </div>
+        {(mode === "signin" || mode === "signup") && (
+          <>
+            <div className="mt-4 flex items-center gap-3">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-xs text-muted-foreground">or</span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
 
-        <button
-          type="button"
-          onClick={async () => {
-            setLoading(true);
-            const { error } = await supabase.auth.signInWithOAuth({
-              provider: "google",
-              options: {
-                redirectTo: window.location.origin + "/app",
-              },
-            });
-            if (error) {
-              toast.error(error.message);
-              setLoading(false);
-              return;
-            }
-          }}
-          disabled={loading}
-          className="mt-3 w-full py-3 rounded-xl bg-secondary border border-border font-semibold flex items-center justify-center gap-2 hover:border-primary transition disabled:opacity-60"
-        >
-          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.2 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.2 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 34.9 26.7 36 24 36c-5.3 0-9.7-3.1-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.1 5.6l6.2 5.2C41.9 35.2 44 30 44 24c0-1.3-.1-2.3-.4-3.5z"/></svg>
-          Continue with Google
-        </button>
+            <button
+              type="button"
+              onClick={async () => {
+                setLoading(true);
+                const { error } = await supabase.auth.signInWithOAuth({
+                  provider: "google",
+                  options: {
+                    redirectTo: window.location.origin + "/app",
+                  },
+                });
+                if (error) {
+                  toast.error(error.message);
+                  setLoading(false);
+                  return;
+                }
+              }}
+              disabled={loading}
+              className="mt-3 w-full py-3 rounded-xl bg-secondary border border-border font-semibold flex items-center justify-center gap-2 hover:border-primary transition disabled:opacity-60"
+            >
+              <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.2 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.1 6.2 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 34.9 26.7 36 24 36c-5.3 0-9.7-3.1-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.1 5.6l6.2 5.2C41.9 35.2 44 30 44 24c0-1.3-.1-2.3-.4-3.5z"/></svg>
+              Continue with Google
+            </button>
+          </>
+        )}
 
         <button onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
           className="mt-4 text-sm text-muted-foreground w-full text-center hover:text-primary">
