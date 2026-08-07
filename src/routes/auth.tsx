@@ -41,7 +41,9 @@ function AuthPage() {
     });
 
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session && !recovery.current) {
+      if (data.session && recovery.current) {
+        setMode("reset");
+      } else if (data.session) {
         nav({ to: "/app", replace: true });
       }
     });
