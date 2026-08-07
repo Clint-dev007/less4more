@@ -4,6 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
+const APP_ORIGIN =
+  typeof window !== "undefined" && import.meta.env.DEV
+    ? window.location.origin
+    : "https://less4more.vercel.app";
+
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in — less4more" }] }),
   component: AuthPage,
@@ -71,7 +76,7 @@ function AuthPage() {
         }
       } else if (mode === "forgot") {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: window.location.origin + "/auth",
+          redirectTo: APP_ORIGIN + "/auth",
         });
         if (error) throw error;
         toast.success("Reset link sent! Check your email.");
